@@ -159,7 +159,8 @@ class Engine {
         new Float32Array(buffer, 0, 2).set([force[0], force[1]]);
         new Float32Array(buffer, 8, 1).set([dt]);
         new Uint32Array(buffer, 12, 1).set([Parameters.bounce ? 1 : 0]);
-        new Uint32Array(buffer, 16, 1).set([1]); // attractors count
+        new Float32Array(buffer, 16, 1).set([Parameters.friction]);
+        new Uint32Array(buffer, 20, 1).set([1]); // attractors count
 
         const attractorsData = [];
         for (const attractor of attractors) {

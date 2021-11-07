@@ -38,6 +38,15 @@ const data = {
                     step: 0.05
                 },
                 {
+                    type: Demopage.supportedControls.Range,
+                    title: "Friction",
+                    id: "friction-range-id",
+                    min: 0.998,
+                    max: 1,
+                    value: 0.9995,
+                    step: 0.0001
+                },
+                {
                     type: Demopage.supportedControls.Checkbox,
                     title: "Bounce",
                     id: "bounce-checkbox-id",

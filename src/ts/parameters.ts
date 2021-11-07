@@ -2,6 +2,7 @@
 
 const controlId = {
     SPEED_RANGE_ID: "speed-range-id",
+    FRICTION_RANGE_ID: "friction-range-id",
     BOUNCE_CHECKBOX_ID: "bounce-checkbox-id",
     RESET_BUTTON_ID: "reset-button-id",
 };
@@ -13,6 +14,9 @@ abstract class Parameters {
 
     public static get speed(): number {
         return Page.Range.getValue(controlId.SPEED_RANGE_ID);
+    }
+    public static get friction(): number {
+        return Page.Range.getValue(controlId.FRICTION_RANGE_ID);
     }
     public static get bounce(): boolean {
         return Page.Checkbox.isChecked(controlId.BOUNCE_CHECKBOX_ID);

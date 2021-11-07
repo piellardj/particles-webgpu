@@ -18,8 +18,9 @@ struct Attractor {                                 //             align(8)  size
     dt: f32;                                       // offset(8)   align(4)  size(4)
     bounce: u32;                                   // offset(12)  align(4)  size(4)
 
-    attractorsCount: u32;                          // offset(16)  align(4)  size(4)
-    // -- implicit padding --                      // offset(20)            size(12)
+    friction: f32;                                 // offset(16)  align(4)  size(4)
+    attractorsCount: u32;                          // offset(20)  align(4)  size(4)
+    // -- implicit padding --                      // offset(24)            size(8)
     [[align(16)]] attractors: array<Attractor, 1>; // offset(32)  align(16) size(16) stride(16)
 };
 
@@ -39,7 +40,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
         force = force + uniforms.attractors[i].force * toAttractor / (squaredDistance + 0.01);
     }
 
-    particle.velocity = particle.velocity + uniforms.dt * force;
+    particle.velocity = uniforms.friction * (particle.velocity + uniforms.dt * force);
     particle.position = particle.position + uniforms.dt * particle.velocity;
 
     if (uniforms.bounce != 0u) {

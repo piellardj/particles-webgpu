@@ -82,12 +82,21 @@ const data = {
             controls: [
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Size",
+                    title: "Particle size",
                     id: "sprite-size-range-id",
                     min: 1,
                     max: 17,
                     value: 5,
                     step: 2
+                },
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Particle opacity",
+                    id: "opacity-range-id",
+                    min: 0.1,
+                    max: 1,
+                    value: 0.8,
+                    step: 0.005
                 },
             ]
         }

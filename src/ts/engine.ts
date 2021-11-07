@@ -28,6 +28,7 @@ class Engine {
     private usefulParticlesCount: number = 0;
 
     private computeBindgroup: GPUBindGroup;
+    private readonly renderBindgroup: GPUBindGroup;
     private readonly renderBindgroupInstanced: GPUBindGroup;
 
     public constructor(targetTextureFormat: GPUTextureFormat) {
@@ -143,8 +144,19 @@ class Engine {
         });
 
         this.renderUniformsBuffer = WebGPU.device.createBuffer({
-            size: 8,
+            size: 16,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
+        this.renderBindgroup = WebGPU.device.createBindGroup({
+            layout: this.renderPipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.renderUniformsBuffer,
+                    }
+                }
+            ]
         });
         this.renderBindgroupInstanced = WebGPU.device.createBindGroup({
             layout: this.renderPipelineInstanced.getBindGroupLayout(0),
@@ -182,10 +194,10 @@ class Engine {
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
-        if (Parameters.spriteSize > 1) {
-            const spriteSize = [Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
-            WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(spriteSize).buffer);
+        const uniformsData = [Parameters.opacity, 0, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
+        WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(uniformsData).buffer);
 
+        if (Parameters.spriteSize > 1) {
             renderPassEncoder.setPipeline(this.renderPipelineInstanced);
             renderPassEncoder.setBindGroup(0, this.renderBindgroupInstanced);
             renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
@@ -193,6 +205,7 @@ class Engine {
             renderPassEncoder.draw(6, this.usefulParticlesCount, 0, 0);
         } else {
             renderPassEncoder.setPipeline(this.renderPipeline);
+            renderPassEncoder.setBindGroup(0, this.renderBindgroup);
             renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
             renderPassEncoder.draw(this.usefulParticlesCount, 1, 0, 0);
         }

@@ -9,6 +9,7 @@ const controlId = {
     RESET_BUTTON_ID: "reset-button-id",
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
+    OPACITY_RANGE_ID: "opacity-range-id",
 };
 
 type ResetObserver = () => void;
@@ -34,6 +35,9 @@ abstract class Parameters {
 
     public static get spriteSize(): number {
         return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
+    }
+    public static get opacity(): number {
+        return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
     }
 }
 

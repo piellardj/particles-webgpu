@@ -17,7 +17,7 @@ class Engine {
     private readonly computePipeline: GPUComputePipeline;
     private readonly renderPipeline: GPURenderPipeline;
 
-    private readonly uniformsBuffer: GPUBuffer;
+    private readonly computeUniformsBuffer: GPUBuffer;
     private gpuBuffer: GPUBuffer;
     private usefulParticlesCount: number = 0;
 
@@ -81,7 +81,7 @@ class Engine {
         attractor.position[1] = 2 * attractor.position[1] - 1;
         const uniformForce: Force = [0, 3 * Parameters.gravity];
         const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, [attractor]);
-        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
+        WebGPU.device.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
 
         const computePass = commandEncoder.beginComputePass();
         computePass.setPipeline(this.computePipeline);
@@ -142,7 +142,7 @@ class Engine {
                 {
                     binding: 1,
                     resource: {
-                        buffer: this.uniformsBuffer
+                        buffer: this.computeUniformsBuffer
                     }
                 }
             ]

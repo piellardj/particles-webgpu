@@ -18,6 +18,8 @@ async function main(): Promise<void> {
         webgpuCanvas.adjustSize();
 
         const commandEncoder = device.createCommandEncoder();
+        engine.update(commandEncoder);
+
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
         webgpuCanvas.setFullcanvasScissor(renderPassEncoder);

@@ -24,7 +24,7 @@ async function main(): Promise<void> {
         if (needToReset) {
             needToReset = false;
             engine.reset(Parameters.particlesCount);
-            Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toFixed());
+            Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toLocaleString());
         }
 
         webgpuCanvas.adjustSize();

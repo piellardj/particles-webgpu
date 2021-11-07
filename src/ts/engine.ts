@@ -3,6 +3,12 @@ import UpdateShaderSource from "../shaders/update.wgsl";
 import { Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
+type Force = [number, number];
+type Attractor = {
+    position: [number, number];
+    force: number;
+}
+
 class Engine {
     private static readonly WORKGROUP_SIZE = 64;
     private dispatchSize: number;
@@ -56,7 +62,7 @@ class Engine {
         });
 
         this.uniformsBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 4,
+            size: Float32Array.BYTES_PER_ELEMENT * 8,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }
@@ -66,10 +72,14 @@ class Engine {
     }
 
     public update(commandEncoder: GPUCommandEncoder, dt: number): void {
-        const uniformsBufferData = new ArrayBuffer(4 * 4);
-        new Float32Array(uniformsBufferData, 0, 3).set([0, 0.1, dt]);
-        new Uint32Array(uniformsBufferData, 12, 1).set([Parameters.bounce ? 1 : 0]);
-
+        const attractor: Attractor = {
+            position: Page.Canvas.getMousePosition() as [number, number],
+            force: Page.Canvas.isMouseDown() ? 0.3 : 0,
+        };
+        attractor.position[0] = 2 * attractor.position[0] - 1;
+        attractor.position[1] = -(2 * attractor.position[1] - 1);
+        const uniformForce: Force = [0, 0.1];
+        const uniformsBufferData = this.buildComputeUniforms(dt, uniformForce, attractor);
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
 
         const computePass = commandEncoder.beginComputePass();
@@ -136,6 +146,17 @@ class Engine {
                 }
             ]
         });
+    }
+
+    private buildComputeUniforms(dt: number, force: Force, attractor: Attractor): ArrayBuffer {
+        const buffer = new ArrayBuffer(4 * (2 + 1 + 1 + 1 * (4)));
+
+        new Float32Array(buffer, 0, 2).set([force[0], force[1]]);
+        new Float32Array(buffer, 2 * 4, 1).set([dt]);
+        new Uint32Array(buffer, 3 * 4, 1).set([Parameters.bounce ? 1 : 0]);
+        new Float32Array(buffer, 4 * 4, 3).set([attractor.position[0], attractor.position[1], attractor.force]);
+
+        return buffer;
     }
 }
 

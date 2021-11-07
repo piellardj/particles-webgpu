@@ -1,0 +1,31 @@
+{
+  "name": "particles-web",
+  "homepage": "https://piellardj.github.io/particles-web",
+  "scripts": {
+    "pre-commit": "npm run rebuild && npm run lint",
+    "http-server": "http-server ./docs -p 8080",
+    "build-page": "ts-node-script src/generate-page.ts",
+    "build": "npm run build-page && npm run webpack",
+    "clean": "shx rm -rf docs/* **/*generated.*",
+    "lint": "eslint src/ts -c src/config/.eslintrc.json --ext .ts",
+    "rebuild": "npm run clean && npm run build",
+    "webpack": "webpack --config src/config/webpack.config.js"
+  },
+  "author": "Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
+  "repository": "github:piellardj/particles-web",
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "@webgpu/types": "^0.1.7",
+    "eslint": "^8.2.0",
+    "http-server": "^14.0.0",
+    "shx": "^0.3.3",
+    "ts-loader": "^9.2.6",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4",
+    "webpack": "^5.62.1",
+    "webpack-cli": "^4.9.1",
+    "webpage-templates": "github:piellardj/webpage-templates"
+  }
+}

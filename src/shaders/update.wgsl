@@ -22,5 +22,24 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
     var particle = particlesStorage.particles[index];
     particle.velocity = particle.velocity + uniforms.dt * uniforms.force;
     particle.position = particle.position + uniforms.dt * particle.velocity;
+
+    if (particle.position.x < -1.0) {
+        particle.position.x = -2.0 - particle.position.x;
+        particle.velocity.x = -particle.velocity.x;
+    }
+    if (particle.position.y < -1.0) {
+        particle.position.y = -2.0 - particle.position.y;
+        particle.velocity.y = -particle.velocity.y;
+    }
+
+    if (particle.position.x > 1.0) {
+        particle.position.x = 2.0 - particle.position.x;
+        particle.velocity.x = -particle.velocity.x;
+    }
+    if (particle.position.y > 1.0) {
+        particle.position.y = 2.0 - particle.position.y;
+        particle.velocity.y = -particle.velocity.y;
+    }
+    
     particlesStorage.particles[index] = particle;
 }

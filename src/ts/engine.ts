@@ -95,17 +95,20 @@ class Engine {
             ]
         };
 
-        const alphaBlendState: GPUBlendState = {
-            color: {
-                srcFactor: 'src-alpha',
-                dstFactor: 'one',
-                operation: 'add',
-            },
-            alpha: {
-                srcFactor: 'zero',
-                dstFactor: 'one',
-                operation: 'add',
-            },
+        const colorTargetState: GPUColorTargetState = {
+            format: targetTextureFormat,
+            blend: {
+                color: {
+                    srcFactor: 'src-alpha',
+                    dstFactor: 'one',
+                    operation: 'add',
+                },
+                alpha: {
+                    srcFactor: 'zero',
+                    dstFactor: 'one',
+                    operation: 'add',
+                }
+            }
         };
 
         this.renderPipeline = WebGPU.device.createRenderPipeline({
@@ -113,10 +116,7 @@ class Engine {
             fragment: {
                 module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
                 entryPoint: "main_fragment",
-                targets: [{
-                    format: targetTextureFormat,
-                    blend: alphaBlendState,
-                }],
+                targets: [colorTargetState],
             },
             primitive: {
                 cullMode: "none",
@@ -129,10 +129,7 @@ class Engine {
             fragment: {
                 module: WebGPU.device.createShaderModule({ code: DrawInstancedShaderSource }),
                 entryPoint: "main_fragment",
-                targets: [{
-                    format: targetTextureFormat,
-                    blend: alphaBlendState,
-                }],
+                targets: [colorTargetState],
             },
             primitive: {
                 cullMode: "none",

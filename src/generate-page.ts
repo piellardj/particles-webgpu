@@ -13,7 +13,12 @@ const data = {
     scriptFiles: [
         "script/main.js"
     ],
-    indicators: [],
+    indicators: [
+        {
+            id: "particles-count",
+            label: "Particles count"
+        },
+    ],
     canvas: {
         width: 512,
         height: 512,

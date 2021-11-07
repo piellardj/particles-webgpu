@@ -2,6 +2,8 @@ import { Engine } from "./engine";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
 
+// import "./page-interface-generated";
+
 async function main(): Promise<void> {
     await WebGPU.initialize();
     const device = WebGPU.device as GPUDevice;
@@ -12,7 +14,9 @@ async function main(): Promise<void> {
     function mainLoop(): void {
         if (needToReset) {
             needToReset = false;
-            engine.reset(1000);
+            const particlesCount = 1000;
+            engine.reset(particlesCount);
+            Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toFixed());
         }
 
         webgpuCanvas.adjustSize();

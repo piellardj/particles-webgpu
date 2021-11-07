@@ -10,7 +10,7 @@ class Engine {
     private readonly renderPipeline: GPURenderPipeline;
     
     private gpuBuffer: GPUBuffer;
-    private particlesCount: number = 0;
+    private usefulParticlesCount: number = 0;
 
     private computeBindgroup: GPUBindGroup;
 
@@ -54,6 +54,10 @@ class Engine {
         });
     }
 
+    public get particlesCount(): number {
+        return this.usefulParticlesCount;
+    }
+
     public update(commandEncoder: GPUCommandEncoder): void {
         const computePass = commandEncoder.beginComputePass();
         computePass.setPipeline(this.computePipeline);
@@ -65,14 +69,14 @@ class Engine {
     public draw(renderPassEncoder: GPURenderPassEncoder): void {
         renderPassEncoder.setPipeline(this.renderPipeline);
         renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
-        renderPassEncoder.draw(this.particlesCount, this.particlesCount, 0, 0);
+        renderPassEncoder.draw(this.usefulParticlesCount, this.usefulParticlesCount, 0, 0);
     }
 
     public reset(particlesCount: number): void {
         const nbRows = Math.ceil(Math.sqrt(particlesCount));
         const nbColumns = nbRows;
-        this.particlesCount = nbRows * nbColumns;
-        this.dispatchSize = Math.ceil(this.particlesCount / Engine.WORKGROUP_SIZE);
+        this.usefulParticlesCount = nbRows * nbColumns;
+        this.dispatchSize = Math.ceil(this.usefulParticlesCount / Engine.WORKGROUP_SIZE);
 
         // round particles count so that
         

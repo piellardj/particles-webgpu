@@ -24,7 +24,19 @@ const data = {
         height: 512,
         enableFullscreen: true
     },
-    controlsSections: []
+    controlsSections: [
+        {
+            title: "Simulation",
+            controls: [
+                {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Bounce",
+                    id: "bounce-checkbox-id",
+                    checked: true
+                },
+            ]
+        }
+    ]
 };
 
 const SRC_DIR = path.resolve(__dirname);

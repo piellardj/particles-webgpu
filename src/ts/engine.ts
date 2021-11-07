@@ -1,5 +1,6 @@
 import DrawShaderSource from "../shaders/draw.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
+import { Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
 class Engine {
@@ -55,7 +56,7 @@ class Engine {
         });
 
         this.uniformsBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 3,
+            size: Float32Array.BYTES_PER_ELEMENT * 4,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }
@@ -65,7 +66,11 @@ class Engine {
     }
 
     public update(commandEncoder: GPUCommandEncoder, dt: number): void {
-        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array([0, 0.1, dt]));
+        const uniformsBufferData = new ArrayBuffer(4 * 4);
+        new Float32Array(uniformsBufferData, 0, 3).set([0, 0.1, dt]);
+        new Uint32Array(uniformsBufferData, 12, 1).set([Parameters.bounce ? 1 : 0]);
+
+        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
 
         const computePass = commandEncoder.beginComputePass();
         computePass.setPipeline(this.computePipeline);

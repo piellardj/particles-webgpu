@@ -23,8 +23,7 @@ async function main(): Promise<void> {
 
         if (needToReset) {
             needToReset = false;
-            const particlesCount = 100000;
-            engine.reset(particlesCount);
+            engine.reset(Parameters.particlesCount);
             Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toFixed());
         }
 

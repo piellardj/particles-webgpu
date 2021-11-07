@@ -1,6 +1,7 @@
 // import "./page-interface-generated";
 
 const controlId = {
+    PARTICLES_COUNT_ID: "particles-count-range-id",
     SPEED_RANGE_ID: "speed-range-id",
     ATTRACTION_RANGE_ID: "attraction-range-id",
     FRICTION_RANGE_ID: "friction-range-id",
@@ -18,6 +19,9 @@ type ResetObserver = () => void;
 abstract class Parameters {
     public static readonly resetObservers: ResetObserver[] = [];
 
+    public static get particlesCount(): number {
+        return 100000 * Page.Range.getValue(controlId.PARTICLES_COUNT_ID);
+    }
     public static get speed(): number {
         return Page.Range.getValue(controlId.SPEED_RANGE_ID);
     }
@@ -52,6 +56,7 @@ function callResetObservers(): void {
     }
 }
 
+Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
 Page.Button.addObserver(controlId.RESET_BUTTON_ID, callResetObservers);
 
 export {

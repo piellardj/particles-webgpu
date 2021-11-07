@@ -30,6 +30,15 @@ const data = {
             controls: [
                 {
                     type: Demopage.supportedControls.Range,
+                    title: "Particle count",
+                    id: "particles-count-range-id",
+                    min: 1,
+                    max: 100,
+                    value: 1,
+                    step: 1
+                },
+                {
+                    type: Demopage.supportedControls.Range,
                     title: "Speed",
                     id: "speed-range-id",
                     min: 0,

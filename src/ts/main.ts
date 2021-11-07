@@ -36,7 +36,7 @@ async function main(): Promise<void> {
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
         webgpuCanvas.setFullcanvasScissor(renderPassEncoder);
-        engine.draw(renderPassEncoder);
+        engine.draw(webgpuCanvas.width, webgpuCanvas.height, renderPassEncoder);
         renderPassEncoder.endPass();
 
         device.queue.submit([commandEncoder.finish()]);

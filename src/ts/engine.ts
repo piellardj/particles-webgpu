@@ -1,4 +1,5 @@
 import DrawShaderSource from "../shaders/draw.wgsl";
+import DrawInstancedShaderSource from "../shaders/draw-instanced.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import { Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
@@ -14,16 +15,33 @@ class Engine {
     private static readonly WORKGROUP_SIZE = 64;
     private dispatchSize: number;
 
+    private readonly quadBuffer: GPUBuffer;
+
     private readonly computePipeline: GPUComputePipeline;
     private readonly renderPipeline: GPURenderPipeline;
+    private readonly renderPipelineInstanced: GPURenderPipeline;
 
     private readonly computeUniformsBuffer: GPUBuffer;
+    private readonly renderUniformsBuffer: GPUBuffer;
+
     private gpuBuffer: GPUBuffer;
     private usefulParticlesCount: number = 0;
 
     private computeBindgroup: GPUBindGroup;
+    private readonly renderBindgroupInstanced: GPUBindGroup;
 
     public constructor(targetTextureFormat: GPUTextureFormat) {
+        this.quadBuffer = WebGPU.device.createBuffer({
+            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
+            usage: GPUBufferUsage.VERTEX,
+            mappedAtCreation: true,
+        });
+        new Float32Array(this.quadBuffer.getMappedRange()).set([
+            -1, -1, +1, -1, +1, +1,
+            -1, -1, +1, +1, -1, +1
+        ]);
+        this.quadBuffer.unmap();
+
         this.computePipeline = WebGPU.device.createComputePipeline({
             compute: {
                 module: WebGPU.device.createShaderModule({ code: UpdateShaderSource }),
@@ -31,29 +49,73 @@ class Engine {
             }
         });
 
-        this.renderPipeline = WebGPU.device.createRenderPipeline({
-            vertex: {
-                module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
-                entryPoint: "main_vertex",
-                buffers: [
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
-                        stepMode: "vertex",
-                    }
-                ]
+        const renderVertexState: GPUVertexState = {
+            module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
+            entryPoint: "main_vertex",
+            buffers: [
+                {
+                    attributes: [
+                        {
+                            shaderLocation: 0,
+                            offset: 0,
+                            format: "float32x2",
+                        }
+                    ],
+                    arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                    stepMode: "vertex",
+                }
+            ]
+        };
+        const renderInstancedVertexState: GPUVertexState = {
+            module: WebGPU.device.createShaderModule({ code: DrawInstancedShaderSource }),
+            entryPoint: "main_vertex",
+            buffers: [
+                {
+                    attributes: [
+                        {
+                            shaderLocation: 0,
+                            offset: 0,
+                            format: "float32x2",
+                        }
+                    ],
+                    arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                    stepMode: "instance",
+                },
+                {
+                    attributes: [
+                        {
+                            shaderLocation: 1,
+                            offset: 0,
+                            format: "float32x2",
+                        }
+                    ],
+                    arrayStride: Float32Array.BYTES_PER_ELEMENT * 2,
+                    stepMode: "vertex",
+                }
+            ]
+        };
+
+        const alphaBlendState: GPUBlendState = {
+            color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one',
+                operation: 'add',
             },
+            alpha: {
+                srcFactor: 'zero',
+                dstFactor: 'one',
+                operation: 'add',
+            },
+        };
+
+        this.renderPipeline = WebGPU.device.createRenderPipeline({
+            vertex: renderVertexState,
             fragment: {
                 module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
                 entryPoint: "main_fragment",
                 targets: [{
                     format: targetTextureFormat,
+                    blend: alphaBlendState,
                 }],
             },
             primitive: {
@@ -62,9 +124,41 @@ class Engine {
             },
         });
 
-        this.uniformsBuffer = WebGPU.device.createBuffer({
+        this.renderPipelineInstanced = WebGPU.device.createRenderPipeline({
+            vertex: renderInstancedVertexState,
+            fragment: {
+                module: WebGPU.device.createShaderModule({ code: DrawInstancedShaderSource }),
+                entryPoint: "main_fragment",
+                targets: [{
+                    format: targetTextureFormat,
+                    blend: alphaBlendState,
+                }],
+            },
+            primitive: {
+                cullMode: "none",
+                topology: "triangle-list",
+            },
+        });
+
+        this.computeUniformsBuffer = WebGPU.device.createBuffer({
             size: 48,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
+
+        this.renderUniformsBuffer = WebGPU.device.createBuffer({
+            size: 8,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
+        this.renderBindgroupInstanced = WebGPU.device.createBindGroup({
+            layout: this.renderPipelineInstanced.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.renderUniformsBuffer,
+                    }
+                }
+            ]
         });
     }
 
@@ -90,10 +184,21 @@ class Engine {
         computePass.endPass();
     }
 
-    public draw(renderPassEncoder: GPURenderPassEncoder): void {
-        renderPassEncoder.setPipeline(this.renderPipeline);
-        renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
-        renderPassEncoder.draw(this.usefulParticlesCount, 1, 0, 0);
+    public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
+        if (Parameters.spriteSize > 1) {
+            const spriteSize = [Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
+            WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(spriteSize).buffer);
+
+            renderPassEncoder.setPipeline(this.renderPipelineInstanced);
+            renderPassEncoder.setBindGroup(0, this.renderBindgroupInstanced);
+            renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
+            renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
+            renderPassEncoder.draw(6, this.usefulParticlesCount, 0, 0);
+        } else {
+            renderPassEncoder.setPipeline(this.renderPipeline);
+            renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
+            renderPassEncoder.draw(this.usefulParticlesCount, 1, 0, 0);
+        }
     }
 
     public reset(particlesCount: number): void {

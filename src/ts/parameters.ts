@@ -7,6 +7,8 @@ const controlId = {
     BOUNCE_CHECKBOX_ID: "bounce-checkbox-id",
     GRAVITY_RANGE_ID: "gravity-range-id",
     RESET_BUTTON_ID: "reset-button-id",
+
+    SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
 };
 
 type ResetObserver = () => void;
@@ -28,6 +30,10 @@ abstract class Parameters {
     }
     public static get gravity(): number {
         return Page.Range.getValue(controlId.GRAVITY_RANGE_ID);
+    }
+
+    public static get spriteSize(): number {
+        return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
     }
 }
 

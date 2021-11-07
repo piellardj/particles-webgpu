@@ -76,6 +76,20 @@ const data = {
                     label: "Reset"
                 },
             ]
+        },
+        {
+            title: "Rendering",
+            controls: [
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Size",
+                    id: "sprite-size-range-id",
+                    min: 1,
+                    max: 17,
+                    value: 5,
+                    step: 2
+                },
+            ]
         }
     ]
 };

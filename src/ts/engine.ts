@@ -93,7 +93,7 @@ class Engine {
     public draw(renderPassEncoder: GPURenderPassEncoder): void {
         renderPassEncoder.setPipeline(this.renderPipeline);
         renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
-        renderPassEncoder.draw(this.usefulParticlesCount, this.usefulParticlesCount, 0, 0);
+        renderPassEncoder.draw(this.usefulParticlesCount, 1, 0, 0);
     }
 
     public reset(particlesCount: number): void {

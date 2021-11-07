@@ -102,8 +102,6 @@ class Engine {
         this.usefulParticlesCount = nbRows * nbColumns;
         this.dispatchSize = Math.ceil(this.usefulParticlesCount / Engine.WORKGROUP_SIZE);
 
-        // round particles count so that
-
         {
             if (this.gpuBuffer) {
                 this.gpuBuffer.destroy();

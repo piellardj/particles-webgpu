@@ -43,6 +43,11 @@ const data = {
                     id: "bounce-checkbox-id",
                     checked: true
                 },
+                {
+                    type: Demopage.supportedControls.Button,
+                    id: "reset-button-id",
+                    label: "Reset"
+                },
             ]
         }
     ]

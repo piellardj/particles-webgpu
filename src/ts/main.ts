@@ -14,6 +14,8 @@ async function main(): Promise<void> {
     let lastRun = performance.now();
 
     let needToReset = true;
+    Parameters.resetObservers.push(() => { needToReset = true; });
+
     function mainLoop(): void {
         const now = performance.now();
         const dt = 0.001 * (now - lastRun);

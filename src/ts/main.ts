@@ -23,7 +23,7 @@ async function main(): Promise<void> {
 
         if (needToReset) {
             needToReset = false;
-            const particlesCount = 1000;
+            const particlesCount = 100000;
             engine.reset(particlesCount);
             Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toFixed());
         }
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
         webgpuCanvas.adjustSize();
 
         const commandEncoder = device.createCommandEncoder();
-        engine.update(commandEncoder, dt * Parameters.speed);
+        engine.update(commandEncoder, dt * Parameters.speed, webgpuCanvas.width / webgpuCanvas.height);
 
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);

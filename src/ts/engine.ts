@@ -72,7 +72,7 @@ class Engine {
         return this.usefulParticlesCount;
     }
 
-    public update(commandEncoder: GPUCommandEncoder, dt: number): void {
+    public update(commandEncoder: GPUCommandEncoder, dt: number, aspectRatio: number): void {
         const attractor: Attractor = {
             position: Page.Canvas.getMousePosition() as [number, number],
             force: Page.Canvas.isMouseDown() ? 6 * Parameters.attraction : 0,
@@ -80,7 +80,7 @@ class Engine {
         attractor.position[0] = 2 * attractor.position[0] - 1;
         attractor.position[1] = 2 * attractor.position[1] - 1;
         const uniformForce: Force = [0, 3 * Parameters.gravity];
-        const uniformsBufferData = this.buildComputeUniforms(dt, uniformForce, [attractor]);
+        const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, [attractor]);
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
 
         const computePass = commandEncoder.beginComputePass();
@@ -149,7 +149,7 @@ class Engine {
         });
     }
 
-    private buildComputeUniforms(dt: number, force: Force, attractors: Attractor[]): ArrayBuffer {
+    private buildComputeUniforms(dt: number, aspectRatio: number, force: Force, attractors: Attractor[]): ArrayBuffer {
         if (attractors.length > MAX_ATTRACTORS) {
             throw new Error(`Too many attractors (${attractors.length}, max is ${MAX_ATTRACTORS}).`);
         }
@@ -160,7 +160,8 @@ class Engine {
         new Float32Array(buffer, 8, 1).set([dt]);
         new Uint32Array(buffer, 12, 1).set([Parameters.bounce ? 1 : 0]);
         new Float32Array(buffer, 16, 1).set([Parameters.friction]);
-        new Uint32Array(buffer, 20, 1).set([1]); // attractors count
+        new Float32Array(buffer, 20, 1).set([aspectRatio]);
+        new Uint32Array(buffer, 24, 1).set([1]); // attractors count
 
         const attractorsData = [];
         for (const attractor of attractors) {

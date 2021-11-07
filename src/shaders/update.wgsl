@@ -19,8 +19,9 @@ struct Attractor {                                 //             align(8)  size
     bounce: u32;                                   // offset(12)  align(4)  size(4)
 
     friction: f32;                                 // offset(16)  align(4)  size(4)
-    attractorsCount: u32;                          // offset(20)  align(4)  size(4)
-    // -- implicit padding --                      // offset(24)            size(8)
+    aspectRatio: f32;                              // offset(20)  align(4)  size(4)
+    attractorsCount: u32;                          // offset(24)  align(4)  size(4)
+    // -- implicit padding --                      // offset(28)            size(4)
     [[align(16)]] attractors: array<Attractor, 1>; // offset(32)  align(16) size(16) stride(16)
 };
 
@@ -33,15 +34,17 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
 
     var particle = particlesStorage.particles[index];
 
-    var force: vec2<f32> = uniforms.force;
+    let applyAspectRatio = vec2<f32>(uniforms.aspectRatio, 1.0);
+
+    var force: vec2<f32> = uniforms.force * applyAspectRatio;
     for (var i = 0u; i < uniforms.attractorsCount; i = i + 1u) {
-        let toAttractor: vec2<f32> = uniforms.attractors[i].position - particle.position;
+        var toAttractor: vec2<f32> = (uniforms.attractors[i].position - particle.position) * applyAspectRatio;
         let squaredDistance: f32 = dot(toAttractor, toAttractor);
         force = force + uniforms.attractors[i].force * toAttractor / (squaredDistance + 0.01);
     }
 
     particle.velocity = uniforms.friction * (particle.velocity + uniforms.dt * force);
-    particle.position = particle.position + uniforms.dt * particle.velocity;
+    particle.position = particle.position + uniforms.dt * particle.velocity / applyAspectRatio;
 
     if (uniforms.bounce != 0u) {
         if (particle.position.x < -1.0) {

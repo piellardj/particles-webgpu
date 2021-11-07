@@ -12,8 +12,8 @@ type Attractor = {
 const MAX_ATTRACTORS = 1;
 
 class Engine {
-    private static readonly WORKGROUP_SIZE = 64;
     private dispatchSize: number;
+    private static readonly WORKGROUP_SIZE = 256;
 
     private readonly quadBuffer: GPUBuffer;
 

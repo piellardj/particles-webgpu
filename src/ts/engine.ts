@@ -111,7 +111,7 @@ class Engine {
             const roundedParticlesCount = this.dispatchSize * Engine.WORKGROUP_SIZE;
             this.gpuBuffer = WebGPU.device.createBuffer({
                 size: Float32Array.BYTES_PER_ELEMENT * (roundedParticlesCount * (2 + 2)),
-                usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
+                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: true,
             });
 

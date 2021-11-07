@@ -27,7 +27,6 @@ function buildConfig(entryFilename /* string */, outputFilename /* string */) /*
                         {
                             loader: "ts-loader",
                             options: {
-                                //   transpileOnly: true,
                                 compilerOptions: {
                                     rootDir: INPUT_SCRIPT_DIR
                                 },
@@ -35,7 +34,11 @@ function buildConfig(entryFilename /* string */, outputFilename /* string */) /*
                             }
                         }
                     ],
-                }
+                },
+                {
+                    test: /\.wgsl$/,
+                    type: 'asset/source',
+                },
             ]
         }
     };

@@ -3,14 +3,15 @@
         "../ts/main.ts",
     ],
     "include": [
-        "../ts/page-interface-generated.d.ts"
+        "../ts/page-interface-generated.d.ts",
+        "../ts/webgpu-utils/wgsl-type.d.ts"
     ],
 	"compilerOptions": {
 		/* Type Checking */
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"alwaysStrict": true,
-		"exactOptionalPropertyTypes": true,
+		"exactOptionalPropertyTypes": false,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,
 		"noImplicitOverride": true,
@@ -23,8 +24,8 @@
 		"strict": true,
 		"strictBindCallApply": true,
 		"strictFunctionTypes": true,
-		"strictNullChecks": true,
-		"strictPropertyInitialization": true,
+		"strictNullChecks": false,
+		"strictPropertyInitialization": false,
 		"useUnknownInCatchVariables": true,
 
 		/* Modules */

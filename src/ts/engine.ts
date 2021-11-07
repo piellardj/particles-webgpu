@@ -213,9 +213,7 @@ class Engine {
     }
 
     public reset(particlesCount: number): void {
-        const nbRows = Math.ceil(Math.sqrt(particlesCount));
-        const nbColumns = nbRows;
-        this.usefulParticlesCount = nbRows * nbColumns;
+        this.usefulParticlesCount = particlesCount;
         this.dispatchSize = Math.ceil(this.usefulParticlesCount / Engine.WORKGROUP_SIZE);
 
         {
@@ -231,14 +229,11 @@ class Engine {
 
             const gpuBufferData = this.gpuBuffer.getMappedRange();
             const particlesBuffer = new Float32Array(gpuBufferData);
-            let i = 0;
-            for (let iY = 0; iY < nbRows; iY++) {
-                for (let iX = 0; iX < nbColumns; iX++) {
-                    particlesBuffer[i++] = iX / (nbColumns - 1) * 2 - 1;
-                    particlesBuffer[i++] = iY / (nbRows - 1) * 2 - 1;
-                    particlesBuffer[i++] = 0;
-                    particlesBuffer[i++] = 0;
-                }
+            for (let iParticle = 0; iParticle < this.usefulParticlesCount; iParticle++) {
+                particlesBuffer[4 * iParticle + 0] = Math.random() * 2 - 1;
+                particlesBuffer[4 * iParticle + 1] = Math.random() * 2 - 1;
+                particlesBuffer[4 * iParticle + 2] = 0;
+                particlesBuffer[4 * iParticle + 3] = 0;
             }
 
             this.gpuBuffer.unmap();

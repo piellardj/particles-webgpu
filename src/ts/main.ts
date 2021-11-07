@@ -1,6 +1,7 @@
 import { Engine } from "./engine";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
+import { Parameters } from "./parameters";
 
 // import "./page-interface-generated";
 
@@ -28,7 +29,7 @@ async function main(): Promise<void> {
         webgpuCanvas.adjustSize();
 
         const commandEncoder = device.createCommandEncoder();
-        engine.update(commandEncoder, dt);
+        engine.update(commandEncoder, dt * Parameters.speed);
 
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);

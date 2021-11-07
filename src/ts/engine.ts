@@ -144,7 +144,7 @@ class Engine {
         });
 
         this.renderUniformsBuffer = WebGPU.device.createBuffer({
-            size: 16,
+            size: 24,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
         this.renderBindgroup = WebGPU.device.createBindGroup({
@@ -194,7 +194,8 @@ class Engine {
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
-        const uniformsData = [Parameters.opacity, 0, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
+        const color = Parameters.particleColor;
+        const uniformsData = [color[0], color[1], color[2], Parameters.opacity, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
         WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(uniformsData).buffer);
 
         if (Parameters.spriteSize > 1) {

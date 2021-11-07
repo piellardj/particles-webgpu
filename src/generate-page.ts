@@ -98,6 +98,12 @@ const data = {
                     value: 0.8,
                     step: 0.005
                 },
+                {
+                    type: Demopage.supportedControls.ColorPicker,
+                    title: "Particle color",
+                    id: "particle-color-id",
+                    defaultValueHex: "#FFFFFF"
+                }
             ]
         }
     ]

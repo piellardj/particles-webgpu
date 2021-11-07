@@ -10,6 +10,7 @@ const controlId = {
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
     OPACITY_RANGE_ID: "opacity-range-id",
+    PARTICLE_COLORPICKER_ID: "particle-color-id",
 };
 
 type ResetObserver = () => void;
@@ -38,6 +39,10 @@ abstract class Parameters {
     }
     public static get opacity(): number {
         return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
+    }
+    public static get particleColor(): [number, number, number] {
+        const color = Page.ColorPicker.getValue(controlId.PARTICLE_COLORPICKER_ID);
+        return [color.r / 255, color.g / 255, color.g / 255];
     }
 }
 

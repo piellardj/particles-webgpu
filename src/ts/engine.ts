@@ -75,7 +75,7 @@ class Engine {
     public update(commandEncoder: GPUCommandEncoder, dt: number): void {
         const attractor: Attractor = {
             position: Page.Canvas.getMousePosition() as [number, number],
-            force: Page.Canvas.isMouseDown() ? 0.3 : 0,
+            force: Page.Canvas.isMouseDown() ? 6 * Parameters.attraction : 0,
         };
         attractor.position[0] = 2 * attractor.position[0] - 1;
         attractor.position[1] = 2 * attractor.position[1] - 1;

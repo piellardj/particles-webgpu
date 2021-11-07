@@ -39,6 +39,15 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
+                    title: "Attraction",
+                    id: "attraction-range-id",
+                    min: -1,
+                    max: 1,
+                    value: 0.7,
+                    step: 0.05
+                },
+                {
+                    type: Demopage.supportedControls.Range,
                     title: "Friction",
                     id: "friction-range-id",
                     min: 0.998,

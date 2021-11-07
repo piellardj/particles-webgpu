@@ -2,6 +2,7 @@
 
 const controlId = {
     SPEED_RANGE_ID: "speed-range-id",
+    ATTRACTION_RANGE_ID: "attraction-range-id",
     FRICTION_RANGE_ID: "friction-range-id",
     BOUNCE_CHECKBOX_ID: "bounce-checkbox-id",
     GRAVITY_RANGE_ID: "gravity-range-id",
@@ -15,6 +16,9 @@ abstract class Parameters {
 
     public static get speed(): number {
         return Page.Range.getValue(controlId.SPEED_RANGE_ID);
+    }
+    public static get attraction(): number {
+        return Page.Range.getValue(controlId.ATTRACTION_RANGE_ID);
     }
     public static get friction(): number {
         return Page.Range.getValue(controlId.FRICTION_RANGE_ID);

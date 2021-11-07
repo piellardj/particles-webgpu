@@ -20,7 +20,7 @@ abstract class Parameters {
     public static readonly resetObservers: ResetObserver[] = [];
 
     public static get particlesCount(): number {
-        return 100000 * Page.Range.getValue(controlId.PARTICLES_COUNT_ID);
+        return 1000000 * Page.Range.getValue(controlId.PARTICLES_COUNT_ID);
     }
     public static get speed(): number {
         return Page.Range.getValue(controlId.SPEED_RANGE_ID);

@@ -11,8 +11,14 @@ type Attractor = {
 }
 const MAX_ATTRACTORS = 1;
 
+type ParticlesBatch = {
+    gpuBuffer: GPUBuffer;
+    computeBindgroup: GPUBindGroup;
+    particlesCount: number;
+    dispatchSize: number;
+}
+
 class Engine {
-    private dispatchSize: number;
     private static readonly WORKGROUP_SIZE = 256;
 
     private readonly quadBuffer: GPUBuffer;
@@ -24,10 +30,8 @@ class Engine {
     private readonly computeUniformsBuffer: GPUBuffer;
     private readonly renderUniformsBuffer: GPUBuffer;
 
-    private gpuBuffer: GPUBuffer;
-    private usefulParticlesCount: number = 0;
+    private readonly particleBatches: ParticlesBatch[] = [];
 
-    private computeBindgroup: GPUBindGroup;
     private readonly renderBindgroup: GPUBindGroup;
     private readonly renderBindgroupInstanced: GPUBindGroup;
 
@@ -172,7 +176,11 @@ class Engine {
     }
 
     public get particlesCount(): number {
-        return this.usefulParticlesCount;
+        let count = 0;
+        for (const particlesBatch of this.particleBatches) {
+            count += particlesBatch.particlesCount;
+        }
+        return count;
     }
 
     public update(commandEncoder: GPUCommandEncoder, dt: number, aspectRatio: number): void {
@@ -186,11 +194,13 @@ class Engine {
         const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, [attractor]);
         WebGPU.device.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
 
-        const computePass = commandEncoder.beginComputePass();
-        computePass.setPipeline(this.computePipeline);
-        computePass.setBindGroup(0, this.computeBindgroup);
-        computePass.dispatch(this.dispatchSize);
-        computePass.endPass();
+        for (const particlesBatch of this.particleBatches) {
+            const computePass = commandEncoder.beginComputePass();
+            computePass.setPipeline(this.computePipeline);
+            computePass.setBindGroup(0, particlesBatch.computeBindgroup);
+            computePass.dispatch(particlesBatch.dispatchSize);
+            computePass.endPass();
+        }
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
@@ -198,64 +208,88 @@ class Engine {
         const uniformsData = [color[0], color[1], color[2], Parameters.opacity, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
         WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(uniformsData).buffer);
 
+        let draw: (particlesBatch: ParticlesBatch) => void;
         if (Parameters.spriteSize > 1) {
-            renderPassEncoder.setPipeline(this.renderPipelineInstanced);
-            renderPassEncoder.setBindGroup(0, this.renderBindgroupInstanced);
-            renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
-            renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
-            renderPassEncoder.draw(6, this.usefulParticlesCount, 0, 0);
+            draw = (particlesBatch: ParticlesBatch) => {
+                renderPassEncoder.setPipeline(this.renderPipelineInstanced);
+                renderPassEncoder.setBindGroup(0, this.renderBindgroupInstanced);
+                renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
+                renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
+                renderPassEncoder.draw(6, particlesBatch.particlesCount, 0, 0);
+            };
         } else {
-            renderPassEncoder.setPipeline(this.renderPipeline);
-            renderPassEncoder.setBindGroup(0, this.renderBindgroup);
-            renderPassEncoder.setVertexBuffer(0, this.gpuBuffer);
-            renderPassEncoder.draw(this.usefulParticlesCount, 1, 0, 0);
+            draw = (particlesBatch: ParticlesBatch) => {
+                renderPassEncoder.setPipeline(this.renderPipeline);
+                renderPassEncoder.setBindGroup(0, this.renderBindgroup);
+                renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
+                renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+            };
+        }
+
+        for (const particlesBatch of this.particleBatches) {
+            draw(particlesBatch);
         }
     }
 
-    public reset(particlesCount: number): void {
-        this.usefulParticlesCount = particlesCount;
-        this.dispatchSize = Math.ceil(this.usefulParticlesCount / Engine.WORKGROUP_SIZE);
-
-        {
-            if (this.gpuBuffer) {
-                this.gpuBuffer.destroy();
+    public reset(wantedParticlesCount: number): void {
+        for (const particlesBatch of this.particleBatches) {
+            if (particlesBatch.gpuBuffer) {
+                particlesBatch.gpuBuffer.destroy();
             }
-            const roundedParticlesCount = this.dispatchSize * Engine.WORKGROUP_SIZE;
-            this.gpuBuffer = WebGPU.device.createBuffer({
-                size: Float32Array.BYTES_PER_ELEMENT * (roundedParticlesCount * (2 + 2)),
+        }
+        this.particleBatches.length = 0;
+
+        const particleSize = Float32Array.BYTES_PER_ELEMENT * (2 + 2);
+        const maxDispatchSize = Math.floor(WebGPU.device.limits.maxStorageBufferBindingSize / particleSize / Engine.WORKGROUP_SIZE);
+
+        let particlesLeftToAllocate = wantedParticlesCount;
+        while (particlesLeftToAllocate > 0) {
+            const idealDispatchSize = Math.ceil(particlesLeftToAllocate / Engine.WORKGROUP_SIZE);
+
+            const dispatchSize = Math.min(idealDispatchSize, maxDispatchSize);
+            const particlesCount = dispatchSize * Engine.WORKGROUP_SIZE;
+            particlesLeftToAllocate -= particlesCount;
+
+            const gpuBuffer = WebGPU.device.createBuffer({
+                size: particlesCount * particleSize,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: true,
             });
-
-            const gpuBufferData = this.gpuBuffer.getMappedRange();
+            const gpuBufferData = gpuBuffer.getMappedRange();
             const particlesBuffer = new Float32Array(gpuBufferData);
-            for (let iParticle = 0; iParticle < this.usefulParticlesCount; iParticle++) {
+            for (let iParticle = 0; iParticle < particlesCount; iParticle++) {
                 particlesBuffer[4 * iParticle + 0] = Math.random() * 2 - 1;
                 particlesBuffer[4 * iParticle + 1] = Math.random() * 2 - 1;
                 particlesBuffer[4 * iParticle + 2] = 0;
                 particlesBuffer[4 * iParticle + 3] = 0;
             }
+            gpuBuffer.unmap();
 
-            this.gpuBuffer.unmap();
+            const computeBindgroup = WebGPU.device.createBindGroup({
+                layout: this.computePipeline.getBindGroupLayout(0),
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: gpuBuffer
+                        }
+                    },
+                    {
+                        binding: 1,
+                        resource: {
+                            buffer: this.computeUniformsBuffer
+                        }
+                    }
+                ]
+            });
+
+            this.particleBatches.push({
+                gpuBuffer,
+                computeBindgroup,
+                particlesCount,
+                dispatchSize,
+            });
         }
-
-        this.computeBindgroup = WebGPU.device.createBindGroup({
-            layout: this.computePipeline.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.gpuBuffer
-                    }
-                },
-                {
-                    binding: 1,
-                    resource: {
-                        buffer: this.computeUniformsBuffer
-                    }
-                }
-            ]
-        });
     }
 
     private buildComputeUniforms(dt: number, aspectRatio: number, force: Force, attractors: Attractor[]): ArrayBuffer {

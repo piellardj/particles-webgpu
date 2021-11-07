@@ -33,7 +33,7 @@ const data = {
                     title: "Particle count",
                     id: "particles-count-range-id",
                     min: 1,
-                    max: 100,
+                    max: 20,
                     value: 1,
                     step: 1
                 },

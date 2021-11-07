@@ -10,8 +10,14 @@ async function main(): Promise<void> {
     const webgpuCanvas = new WebGPUCanvas(Page.Canvas.getCanvas());
     const engine = new Engine(webgpuCanvas.textureFormat);
 
+    let lastRun = performance.now();
+
     let needToReset = true;
     function mainLoop(): void {
+        const now = performance.now();
+        const dt = 0.001 * (now - lastRun);
+        lastRun = now;
+
         if (needToReset) {
             needToReset = false;
             const particlesCount = 1000;
@@ -22,7 +28,7 @@ async function main(): Promise<void> {
         webgpuCanvas.adjustSize();
 
         const commandEncoder = device.createCommandEncoder();
-        engine.update(commandEncoder);
+        engine.update(commandEncoder, dt);
 
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);

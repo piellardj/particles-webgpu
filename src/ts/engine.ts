@@ -8,7 +8,8 @@ class Engine {
 
     private readonly computePipeline: GPUComputePipeline;
     private readonly renderPipeline: GPURenderPipeline;
-    
+
+    private readonly uniformsBuffer: GPUBuffer;
     private gpuBuffer: GPUBuffer;
     private usefulParticlesCount: number = 0;
 
@@ -52,13 +53,20 @@ class Engine {
                 topology: "point-list",
             },
         });
+
+        this.uniformsBuffer = WebGPU.device.createBuffer({
+            size: Float32Array.BYTES_PER_ELEMENT * 3,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
     }
 
     public get particlesCount(): number {
         return this.usefulParticlesCount;
     }
 
-    public update(commandEncoder: GPUCommandEncoder): void {
+    public update(commandEncoder: GPUCommandEncoder, dt: number): void {
+        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array([0, 0.1, dt]));
+
         const computePass = commandEncoder.beginComputePass();
         computePass.setPipeline(this.computePipeline);
         computePass.setBindGroup(0, this.computeBindgroup);
@@ -79,7 +87,7 @@ class Engine {
         this.dispatchSize = Math.ceil(this.usefulParticlesCount / Engine.WORKGROUP_SIZE);
 
         // round particles count so that
-        
+
         {
             if (this.gpuBuffer) {
                 this.gpuBuffer.destroy();
@@ -111,6 +119,12 @@ class Engine {
                     binding: 0,
                     resource: {
                         buffer: this.gpuBuffer
+                    }
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: this.uniformsBuffer
                     }
                 }
             ]

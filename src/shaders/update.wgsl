@@ -1,5 +1,6 @@
 struct Particle {
     position: vec2<f32>;
+    velocity: vec2<f32>;
 };
 
 [[block]] struct ParticlesBuffer {
@@ -19,6 +20,7 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
     let index: u32 = GlobalInvocationID.x;
 
     var particle = particlesStorage.particles[index];
-    particle.position = particle.position + uniforms.dt * uniforms.force;
+    particle.velocity = particle.velocity + uniforms.dt * uniforms.force;
+    particle.position = particle.position + uniforms.dt * particle.velocity;
     particlesStorage.particles[index] = particle;
 }

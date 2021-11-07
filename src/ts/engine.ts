@@ -36,7 +36,7 @@ class Engine {
                                 format: "float32x2",
                             }
                         ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 2,
+                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
                         stepMode: "vertex",
                     }
                 ]
@@ -94,7 +94,7 @@ class Engine {
             }
             const roundedParticlesCount = this.dispatchSize * Engine.WORKGROUP_SIZE;
             this.gpuBuffer = WebGPU.device.createBuffer({
-                size: Float32Array.BYTES_PER_ELEMENT * (roundedParticlesCount * 2),
+                size: Float32Array.BYTES_PER_ELEMENT * (roundedParticlesCount * (2 + 2)),
                 usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: true,
             });
@@ -106,6 +106,8 @@ class Engine {
                 for (let iX = 0; iX < nbColumns; iX++) {
                     particlesBuffer[i++] = iX / (nbColumns - 1) * 2 - 1;
                     particlesBuffer[i++] = iY / (nbRows - 1) * 2 - 1;
+                    particlesBuffer[i++] = 0;
+                    particlesBuffer[i++] = 0;
                 }
             }
 

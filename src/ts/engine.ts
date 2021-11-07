@@ -78,8 +78,8 @@ class Engine {
             force: Page.Canvas.isMouseDown() ? 0.3 : 0,
         };
         attractor.position[0] = 2 * attractor.position[0] - 1;
-        attractor.position[1] = -(2 * attractor.position[1] - 1);
-        const uniformForce: Force = [0, 0.1];
+        attractor.position[1] = 2 * attractor.position[1] - 1;
+        const uniformForce: Force = [0, 3 * Parameters.gravity];
         const uniformsBufferData = this.buildComputeUniforms(dt, uniformForce, [attractor]);
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
 

@@ -53,6 +53,15 @@ const data = {
                     checked: true
                 },
                 {
+                    type: Demopage.supportedControls.Range,
+                    title: "Gravity",
+                    id: "gravity-range-id",
+                    min: 0,
+                    max: 1,
+                    value: 0.1,
+                    step: 0.001
+                },
+                {
                     type: Demopage.supportedControls.Button,
                     id: "reset-button-id",
                     label: "Reset"

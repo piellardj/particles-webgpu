@@ -8,6 +8,7 @@ type Attractor = {
     position: [number, number];
     force: number;
 }
+const MAX_ATTRACTORS = 1;
 
 class Engine {
     private static readonly WORKGROUP_SIZE = 64;
@@ -62,7 +63,7 @@ class Engine {
         });
 
         this.uniformsBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 8,
+            size: 48,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }
@@ -79,7 +80,7 @@ class Engine {
         attractor.position[0] = 2 * attractor.position[0] - 1;
         attractor.position[1] = -(2 * attractor.position[1] - 1);
         const uniformForce: Force = [0, 0.1];
-        const uniformsBufferData = this.buildComputeUniforms(dt, uniformForce, attractor);
+        const uniformsBufferData = this.buildComputeUniforms(dt, uniformForce, [attractor]);
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsBufferData);
 
         const computePass = commandEncoder.beginComputePass();
@@ -148,13 +149,26 @@ class Engine {
         });
     }
 
-    private buildComputeUniforms(dt: number, force: Force, attractor: Attractor): ArrayBuffer {
-        const buffer = new ArrayBuffer(4 * (2 + 1 + 1 + 1 * (4)));
+    private buildComputeUniforms(dt: number, force: Force, attractors: Attractor[]): ArrayBuffer {
+        if (attractors.length > MAX_ATTRACTORS) {
+            throw new Error(`Too many attractors (${attractors.length}, max is ${MAX_ATTRACTORS}).`);
+        }
+
+        const buffer = new ArrayBuffer(48);
 
         new Float32Array(buffer, 0, 2).set([force[0], force[1]]);
-        new Float32Array(buffer, 2 * 4, 1).set([dt]);
-        new Uint32Array(buffer, 3 * 4, 1).set([Parameters.bounce ? 1 : 0]);
-        new Float32Array(buffer, 4 * 4, 3).set([attractor.position[0], attractor.position[1], attractor.force]);
+        new Float32Array(buffer, 8, 1).set([dt]);
+        new Uint32Array(buffer, 12, 1).set([Parameters.bounce ? 1 : 0]);
+        new Uint32Array(buffer, 16, 1).set([1]); // attractors count
+
+        const attractorsData = [];
+        for (const attractor of attractors) {
+            attractorsData.push(attractor.position[0]);
+            attractorsData.push(attractor.position[1]);
+            attractorsData.push(attractor.force);
+            attractorsData.push(0); // padding
+        }
+        new Float32Array(buffer, 32, attractorsData.length).set(attractorsData);
 
         return buffer;
     }

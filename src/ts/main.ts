@@ -1,7 +1,8 @@
 import { Engine } from "./engine";
-import * as WebGPU from "./webgpu-utils/webgpu-device";
+import * as Image from "./image";
+import { ColorMode, Parameters } from "./parameters";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
-import { Parameters } from "./parameters";
+import * as WebGPU from "./webgpu-utils/webgpu-device";
 
 // import "./page-interface-generated";
 
@@ -16,20 +17,27 @@ async function main(): Promise<void> {
     let needToReset = true;
     Parameters.resetObservers.push(() => { needToReset = true; });
 
-    function mainLoop(): void {
+    async function mainLoop(): Promise<void> {
         const now = performance.now();
         const dt = 0.001 * (now - lastRun);
         lastRun = now;
+
+        const commandEncoder = device.createCommandEncoder();
 
         if (needToReset) {
             needToReset = false;
             engine.reset(Parameters.particlesCount);
             Page.Canvas.setIndicatorText("particles-count", engine.particlesCount.toLocaleString());
+
+            if (Parameters.colorMode === ColorMode.MULTICOLOR) {
+                const sampler = Image.getSampler();
+                const image = await Image.getTexture("rc/colors.png");
+                engine.initializeColors(commandEncoder, sampler, image);
+            }
         }
 
         webgpuCanvas.adjustSize();
 
-        const commandEncoder = device.createCommandEncoder();
         engine.update(commandEncoder, dt * Parameters.speed, webgpuCanvas.width / webgpuCanvas.height);
 
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());

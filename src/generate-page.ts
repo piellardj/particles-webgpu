@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as fse from "fs-extra";
 import * as path from "path";
 import { Demopage } from "webpage-templates";
 
@@ -87,6 +88,28 @@ const data = {
             ]
         },
         {
+            title: "Colors",
+            controls: [
+                {
+                    type: Demopage.supportedControls.Tabs,
+                    title: "Mode",
+                    id: "colors-mode-tabs-id",
+                    unique: true,
+                    options: [
+                        {
+                            value: "unicolor",
+                            label: "Unicolor",
+                            checked: true,
+                        },
+                        {
+                            value: "multicolor",
+                            label: "Multicolor",
+                        },
+                    ]
+                },
+            ]
+        },
+        {
             title: "Rendering",
             controls: [
                 {
@@ -131,3 +154,5 @@ buildResult.pageScriptDeclaration = "/* tslint:disable */\n" + buildResult.pageS
 
 const SCRIPT_DECLARATION_FILEPATH = path.join(SRC_DIR, "ts", "page-interface-generated.d.ts");
 fs.writeFileSync(SCRIPT_DECLARATION_FILEPATH, buildResult.pageScriptDeclaration);
+
+fse.copySync(path.join(SRC_DIR, "static"), DEST_DIR);

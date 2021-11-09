@@ -1,9 +1,10 @@
-import DrawInstancedShaderSource from "../shaders/draw-instanced.wgsl";
 import DrawMulticolorInstancedShaderSource from "../shaders/draw-instanced-multicolor.wgsl";
+import DrawInstancedShaderSource from "../shaders/draw-instanced.wgsl";
 import DrawMulticolorShaderSource from "../shaders/draw-multicolor.wgsl";
 import DrawShaderSource from "../shaders/draw.wgsl";
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
+import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
 import { ColorMode, Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
@@ -112,7 +113,7 @@ class Engine {
 
         this.renderMulticolorPipeline = WebGPU.device.createRenderPipeline({
             vertex: {
-                module: WebGPU.device.createShaderModule({ code: DrawMulticolorShaderSource }),
+                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorShaderSource }),
                 entryPoint: "main_vertex",
                 buffers: [
                     {
@@ -140,7 +141,7 @@ class Engine {
                 ]
             },
             fragment: {
-                module: WebGPU.device.createShaderModule({ code: DrawMulticolorShaderSource }),
+                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorShaderSource }),
                 entryPoint: "main_fragment",
                 targets: [colorTargetState],
             },
@@ -192,7 +193,7 @@ class Engine {
 
         this.renderMulticolorPipelineInstanced = WebGPU.device.createRenderPipeline({
             vertex: {
-                module: WebGPU.device.createShaderModule({ code: DrawMulticolorInstancedShaderSource }),
+                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorInstancedShaderSource }),
                 entryPoint: "main_vertex",
                 buffers: [
                     {
@@ -231,7 +232,7 @@ class Engine {
                 ]
             },
             fragment: {
-                module: WebGPU.device.createShaderModule({ code: DrawMulticolorInstancedShaderSource }),
+                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorInstancedShaderSource }),
                 entryPoint: "main_fragment",
                 targets: [colorTargetState],
             },
@@ -297,7 +298,7 @@ class Engine {
 
         this.initializeColorsComputePipeline = WebGPU.device.createComputePipeline({
             compute: {
-                module: WebGPU.device.createShaderModule({ code: InitializeColorsShaderSource }),
+                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + InitializeColorsShaderSource }),
                 entryPoint: "main"
             }
         });

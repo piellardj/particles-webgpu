@@ -19,10 +19,5 @@ fn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inColor: u
 
 [[stage(fragment)]]
 fn main_fragment([[location(0),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {
-    return vec4<f32>(
-        f32(color & 255u) / 255.0,
-        f32((color >> 8u) & 255u) / 255.0,
-        f32((color >> 16u) & 255u) / 255.0,
-        uniforms.color.a
-    );
+    return unpackColor(color, uniforms.color.a);
 }

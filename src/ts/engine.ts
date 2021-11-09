@@ -131,10 +131,10 @@ class Engine {
                             {
                                 shaderLocation: 1,
                                 offset: 0,
-                                format: "float32x4",
+                                format: "uint32",
                             }
                         ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                        arrayStride: Uint32Array.BYTES_PER_ELEMENT,
                         stepMode: "vertex",
                     }
                 ]
@@ -222,10 +222,10 @@ class Engine {
                             {
                                 shaderLocation: 2,
                                 offset: 0,
-                                format: "float32x4",
+                                format: "uint32",
                             }
                         ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                        arrayStride: Uint32Array.BYTES_PER_ELEMENT,
                         stepMode: "instance",
                     }
                 ]
@@ -405,7 +405,7 @@ class Engine {
                 mappedAtCreation: true,
             });
             const colorsGpuBuffer = WebGPU.device.createBuffer({
-                size: particlesCount * particleSize,
+                size: particlesCount * Uint32Array.BYTES_PER_ELEMENT,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: false,
             });

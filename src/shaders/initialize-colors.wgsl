@@ -8,7 +8,7 @@ struct Particle {
 };
 
 [[block]] struct ColorsBuffer {
-    color: array<vec3<f32>>;
+    color: array<u32>;
 };
 
 [[group(0), binding(0)]] var<storage,read> particlesStorage: ParticlesBuffer;
@@ -22,5 +22,15 @@ fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
     let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);
 
     let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;
-    colorsStorage.color[index] = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;
+    let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;
+    let colorUint = vec3<u32>(
+        u32(color.r * 255.0),
+        u32(color.g * 255.0),
+        u32(color.b * 255.0),
+    );
+
+    colorsStorage.color[index] = 
+        colorUint.r |
+        (colorUint.g << 8u) |
+        (colorUint.b << 16u);
 }

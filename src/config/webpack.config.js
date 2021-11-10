@@ -12,7 +12,8 @@ function buildConfig(entryFilename /* string */, outputFilename /* string */) /*
         entry: path.join(INPUT_SCRIPT_DIR, entryFilename),
         output: {
             path: OUTPUT_SCRIPT_DIR,
-            filename: outputFilename
+            filename: outputFilename,
+            assetModuleFilename: path.join("..", "rc", "images", "[hash][ext][query]")
         },
         target: ["web", "es2017"],
         resolve: {
@@ -38,6 +39,10 @@ function buildConfig(entryFilename /* string */, outputFilename /* string */) /*
                 {
                     test: /\.wgsl$/,
                     type: 'asset/source',
+                },
+                {
+                    test: /\.png$/,
+                    type: 'asset/resource',
                 },
             ]
         }

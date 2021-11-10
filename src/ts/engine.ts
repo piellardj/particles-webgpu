@@ -386,6 +386,9 @@ class Engine {
             if (particlesBatch.gpuBuffer) {
                 particlesBatch.gpuBuffer.destroy();
             }
+            if (particlesBatch.colorsBuffer) {
+                particlesBatch.colorsBuffer.destroy();
+            }
         }
         this.particleBatches.length = 0;
 

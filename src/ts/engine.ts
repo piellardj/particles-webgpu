@@ -5,6 +5,7 @@ import DrawShaderSource from "../shaders/draw.wgsl";
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
+import { bytesToString } from "./helpers";
 import { ColorMode, Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
@@ -392,6 +393,8 @@ class Engine {
         }
         this.particleBatches.length = 0;
 
+        let totalGpuBufferSize = 0, totalColorBufferSize = 0;
+
         const particleSize = Float32Array.BYTES_PER_ELEMENT * (2 + 2);
         const maxDispatchSize = Math.floor(WebGPU.device.limits.maxStorageBufferBindingSize / particleSize / Engine.WORKGROUP_SIZE);
 
@@ -403,16 +406,20 @@ class Engine {
             const particlesCount = dispatchSize * Engine.WORKGROUP_SIZE;
             particlesLeftToAllocate -= particlesCount;
 
+            const gpuBufferSize = particlesCount * particleSize;
             const gpuBuffer = WebGPU.device.createBuffer({
-                size: particlesCount * particleSize,
+                size: gpuBufferSize,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: true,
             });
+            totalGpuBufferSize += gpuBufferSize;
+            const colorsBufferSize = particlesCount * Uint32Array.BYTES_PER_ELEMENT;
             const colorsGpuBuffer = WebGPU.device.createBuffer({
-                size: particlesCount * Uint32Array.BYTES_PER_ELEMENT,
+                size: colorsBufferSize,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: false,
             });
+            totalColorBufferSize += colorsBufferSize;
 
             const gpuBufferData = gpuBuffer.getMappedRange();
             const particlesBuffer = new Float32Array(gpuBufferData);
@@ -469,6 +476,8 @@ class Engine {
                 dispatchSize,
             });
         }
+
+        console.info(`GPU memory used:\n  - positions/velocities: ${bytesToString(totalGpuBufferSize)}\n  - colors: ${bytesToString(totalColorBufferSize)}`);
     }
 
     public initializeColors(commandEncoder: GPUCommandEncoder, sampler: GPUSampler, texture: GPUTexture): void {

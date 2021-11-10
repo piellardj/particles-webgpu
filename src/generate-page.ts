@@ -107,6 +107,18 @@ const data = {
                         },
                     ]
                 },
+                {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Auto",
+                    id: "auto-color-checkbox-id",
+                    checked: true
+                },
+                {
+                    type: Demopage.supportedControls.ColorPicker,
+                    title: "Particle color",
+                    id: "particle-color-id",
+                    defaultValueHex: "#FFFFFF"
+                }
             ]
         },
         {
@@ -129,12 +141,6 @@ const data = {
                     max: 1,
                     value: 0.8,
                     step: 0.005
-                },
-                {
-                    type: Demopage.supportedControls.ColorPicker,
-                    title: "Particle color",
-                    id: "particle-color-id",
-                    defaultValueHex: "#FFFFFF"
                 }
             ]
         }

@@ -10,10 +10,11 @@ const controlId = {
     RESET_BUTTON_ID: "reset-button-id",
 
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
+    COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
+    PARTICLE_COLORPICKER_ID: "particle-color-id",
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
     OPACITY_RANGE_ID: "opacity-range-id",
-    PARTICLE_COLORPICKER_ID: "particle-color-id",
 };
 
 type ResetObserver = () => void;
@@ -48,16 +49,46 @@ abstract class Parameters {
     public static get colorMode(): ColorMode {
         return Page.Tabs.getValues(controlId.COLOR_MODE_TABS_ID)[0] as ColorMode;
     }
+    public static get autoColor(): boolean {
+        return Page.Checkbox.isChecked(controlId.COLOR_AUTO_CHECKBOX_ID);
+    }
+    public static get particleColor(): [number, number, number] {
+        if (Parameters.autoColor) {
+            const cycleLength = 60000;
+            const now = (performance.now() % cycleLength) / cycleLength * 6;
+            const min = 0.2;
+            let r = min, g = min, b = min;
+            if (now < 1) {
+                r = 1;
+                g = min + (1 - min) * now;
+            } else if (now < 2) {
+                r = min + (1 - min) * (2 - now);
+                g = 1;
+            } else if (now < 3) {
+                g = 1;
+                b = min + (1 - min) * (now - 2);
+            } else if (now < 4) {
+                g = min + (1 - min) * (4 - now);
+                b = 1;
+            } else if (now < 5) {
+                r = min + (1 - min) * (now - 4);
+                b = 1;
+            } else {
+                r = 1;
+                b = min + (1 - min) * (6 - now);
+            }
+            return [r, g, b];
+        } else {
+            const color = Page.ColorPicker.getValue(controlId.PARTICLE_COLORPICKER_ID);
+            return [color.r / 255, color.g / 255, color.g / 255];
+        }
+    }
 
     public static get spriteSize(): number {
         return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
     }
     public static get opacity(): number {
         return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
-    }
-    public static get particleColor(): [number, number, number] {
-        const color = Page.ColorPicker.getValue(controlId.PARTICLE_COLORPICKER_ID);
-        return [color.r / 255, color.g / 255, color.g / 255];
     }
 }
 
@@ -69,7 +100,8 @@ function callResetObservers(): void {
 
 function updateColorsVisibility(): void {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
-    Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor);
+    Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
+    Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
 }
 
 Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
@@ -80,7 +112,7 @@ Page.Tabs.addObserver(controlId.COLOR_MODE_TABS_ID, () => {
         callResetObservers();
     }
 });
-
+Page.Checkbox.addObserver(controlId.COLOR_AUTO_CHECKBOX_ID, updateColorsVisibility);
 updateColorsVisibility();
 
 export {

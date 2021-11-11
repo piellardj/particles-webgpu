@@ -21,6 +21,6 @@ fn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner
 
 [[stage(fragment)]]
 fn main_fragment([[location(0)]] localPosition: vec2<f32>) -> [[location(0)]] vec4<f32> {
-    let intensity = max(0.0, 1.0 - length(localPosition));
+    let intensity = step(length(localPosition), 0.95);
     return vec4<f32>(uniforms.color.rgb, uniforms.color.a * intensity);
 }

@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import * as fse from "fs-extra";
 import * as path from "path";
 import { Demopage } from "webpage-templates";
 
@@ -7,7 +6,10 @@ import { Demopage } from "webpage-templates";
 const data = {
     title: "Particles",
     description: "WebGPU implementation of particles in a gravity field",
-    introduction: ["TODO INTRO"],
+    introduction: [
+        "This is a basic particles simulation running fully on GPU, using the new WebGPU API.",
+        "Particles evolve independently, following simple gravitational rules. There can be several attraction points at once. You can control one with your mouse by pressing the left mouse button."
+    ],
     githubProjectName: "particles-webgpu",
     additionalLinks: [],
     styleFiles: [
@@ -203,9 +205,9 @@ const data = {
                     type: Demopage.supportedControls.Range,
                     title: "Particle opacity",
                     id: "opacity-range-id",
-                    min: 0.1,
+                    min: 0.01,
                     max: 1,
-                    value: 0.8,
+                    value: 0.1,
                     step: 0.005
                 },
                 {

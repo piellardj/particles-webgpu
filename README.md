@@ -7,6 +7,8 @@ Chrome 94 brings experimental support for the new WebGPU API. To enable it, a fl
 
 This is actually a WebGPU port of my old [particles-gpu](https://github.com/piellardj/particles-gpu) project. The main differences are that this one uses compute shaders, and stores the particles in a GPUBuffer instead of a texture.
 
+See it live [here](https://piellardj.github.io/particles-webgpu/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true&page%3Arange%3Aparticles-count-range-id=3).
+
 ## Preview
 ![Illustration 1](src/readme/01.png)
 

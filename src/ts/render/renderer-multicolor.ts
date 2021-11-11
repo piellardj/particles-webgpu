@@ -12,15 +12,12 @@ type RenderableParticlesBatch = {
 }
 
 class RendererMulticolor extends Renderer {
-    protected readonly pipeline: GPURenderPipeline;
-    private readonly uniformsBindgroup: GPUBindGroup;
-
     public constructor(targetTextureFormat: GPUTextureFormat) {
         super(targetTextureFormat);
 
         const shaderModule = WebGPU.device.createShaderModule({ code: ColorShaderPartSource + ShaderSource });
 
-        this.pipeline = WebGPU.device.createRenderPipeline({
+        this.createRenderPipelines({
             vertex: {
                 module: shaderModule,
                 entryPoint: "main_vertex",
@@ -52,32 +49,21 @@ class RendererMulticolor extends Renderer {
             fragment: {
                 module: shaderModule,
                 entryPoint: "main_fragment",
-                targets: [this.colorTargetState],
+                targets: [],
             },
             primitive: {
                 cullMode: "none",
                 topology: "point-list",
             },
         });
-
-        this.uniformsBindgroup = WebGPU.device.createBindGroup({
-            layout: this.pipeline.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.uniformsBuffer,
-                    }
-                }
-            ]
-        });
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void {
         super.updateUniformsBuffer(canvasWidth, canvasHeight);
 
-        renderPassEncoder.setPipeline(this.pipeline);
-        renderPassEncoder.setBindGroup(0, this.uniformsBindgroup);
+        const pipeline = this.pipeline;
+        renderPassEncoder.setPipeline(pipeline.renderPipeline);
+        renderPassEncoder.setBindGroup(0, pipeline.uniformsBindgroup);
         renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
         renderPassEncoder.setVertexBuffer(1, particlesBatch.colorsBuffer);
         renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);

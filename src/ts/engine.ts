@@ -5,12 +5,12 @@ import DrawShaderSource from "../shaders/draw.wgsl";
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
-import { Attractor, Force, setOverlays } from "./attractors";
+import * as Attractors from "./attractors";
 import { bytesToString } from "./helpers";
 import { ColorMode, Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
-const MAX_ATTRACTORS = 1;
+const MAX_ATTRACTORS = 4;
 
 type ParticlesBatch = {
     gpuBuffer: GPUBuffer;
@@ -240,7 +240,7 @@ class Engine {
         });
 
         this.computeUniformsBuffer = WebGPU.device.createBuffer({
-            size: 48,
+            size: 96,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
 
@@ -310,15 +310,20 @@ class Engine {
     }
 
     public update(commandEncoder: GPUCommandEncoder, dt: number, aspectRatio: number): void {
-        const attractor: Attractor = {
-            position: Page.Canvas.getMousePosition() as [number, number],
-            force: Page.Canvas.isMouseDown() ? 6 * Parameters.attraction : 0,
-        };
-        attractor.position[0] = 2 * attractor.position[0] - 1;
-        attractor.position[1] = 2 * attractor.position[1] - 1;
-        setOverlays(attractors);
+        const attractors = Attractors.getPreset();
+        if (Page.Canvas.isMouseDown()) {
+            const attractor: Attractors.Attractor = {
+                position: Page.Canvas.getMousePosition() as [number, number],
+                force: 10 * Parameters.attraction,
+            };
+            attractor.position[0] = 2 * attractor.position[0] - 1;
+            attractor.position[1] = 2 * attractor.position[1] - 1;
+            attractors.push(attractor);
+        }
+        Attractors.setOverlays(attractors);
 
-        const uniformForce: Force = [0, 3 * Parameters.gravity];
+        const uniformForce: Attractors.Force = [0, 3 * Parameters.gravity];
+        const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, attractors);
         WebGPU.device.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
 
         for (const particlesBatch of this.particleBatches) {
@@ -502,12 +507,12 @@ class Engine {
         }
     }
 
-    private buildComputeUniforms(dt: number, aspectRatio: number, force: Force, attractors: Attractor[]): ArrayBuffer {
+    private buildComputeUniforms(dt: number, aspectRatio: number, force: Attractors.Force, attractors: Attractors.Attractor[]): ArrayBuffer {
         if (attractors.length > MAX_ATTRACTORS) {
             throw new Error(`Too many attractors (${attractors.length}, max is ${MAX_ATTRACTORS}).`);
         }
 
-        const buffer = new ArrayBuffer(48);
+        const buffer = new ArrayBuffer(96);
 
         new Float32Array(buffer, 0, 2).set([force[0], force[1]]);
         new Float32Array(buffer, 8, 1).set([dt]);

@@ -93,6 +93,35 @@ const data = {
                     step: 0.05
                 },
                 {
+                    type: Demopage.supportedControls.Select,
+                    title: "Preset",
+                    id: "attractors-preset-select-id",
+                    placeholder: "Custom",
+                    options: [
+                        {
+                            value: "none",
+                            label: "None",
+                        },
+                        {
+                            value: "orbit",
+                            label: "Orbit",
+                            checked: true,
+                        },
+                        {
+                            value: "sines",
+                            label: "Sines",
+                        },
+                        {
+                            value: "central-attractive",
+                            label: "Central (attractive)",
+                        },
+                        {
+                            value: "central-repulsive",
+                            label: "Central (replusilve)",
+                        },
+                    ]
+                },
+                {
                     type: Demopage.supportedControls.Checkbox,
                     title: "Display",
                     id: "display-attractors-checkbox-id",

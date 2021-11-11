@@ -12,6 +12,7 @@ const controlId = {
     RESET_BUTTON_ID: "reset-button-id",
 
     ATTRACTION_RANGE_ID: "attraction-range-id",
+    ATTRACTORS_PRESET_SELECT_ID: "attractors-preset-select-id",
     ATTRACTORS_DISPLAY_CHECKBOX_ID: "display-attractors-checkbox-id",
 
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
@@ -25,6 +26,14 @@ const controlId = {
 };
 
 type ResetObserver = () => void;
+
+enum AttractorsPreset {
+    NONE = "none",
+    ORBIT = "orbit",
+    SINES = "sines",
+    CENTRAL_ATTRACTIVE = "central-attractive",
+    CENTRAL_REPULSIVE = "central-repulsive",
+}
 
 enum ColorMode {
     UNICOLOR = "unicolor",
@@ -59,6 +68,9 @@ abstract class Parameters {
 
     public static get attraction(): number {
         return Page.Range.getValue(controlId.ATTRACTION_RANGE_ID);
+    }
+    public static get attractorsPreset(): AttractorsPreset {
+        return Page.Select.getValue(controlId.ATTRACTORS_PRESET_SELECT_ID) as AttractorsPreset;
     }
     public static get displayAttractors(): boolean {
         return Page.Checkbox.isChecked(controlId.ATTRACTORS_DISPLAY_CHECKBOX_ID);
@@ -166,6 +178,7 @@ Page.FileControl.addUploadObserver(controlId.IMAGE_UPLOAD_BUTTON_ID, (filesList:
 updateColorsVisibility();
 
 export {
+    AttractorsPreset,
     ColorMode,
     Parameters,
 };

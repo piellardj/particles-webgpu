@@ -8,7 +8,7 @@ const data = {
     title: "Particles",
     description: "WebGPU implementation of particles in a gravity field",
     introduction: ["TODO INTRO"],
-    githubProjectName: "particles-web",
+    githubProjectName: "particles-webgpu",
     additionalLinks: [],
     styleFiles: [
         "css/attractor-overlay.css"

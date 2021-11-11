@@ -1,3 +1,6 @@
+/// <reference types="./page-interface-generated" />
+/// <reference types="./webgpu-utils/wgsl-type" />
+
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";

@@ -1,7 +1,8 @@
+/// <reference types="./page-interface-generated" />
+/// <reference types="./webgpu-utils/image-type" />
+
 import ImageUrlLadybug from "../resources/ladybug.png";
 import ImageUrlColors from "../resources/colors.png";
-
-// import "./page-interface-generated";
 
 const controlId = {
     PARTICLES_COUNT_ID: "particles-count-range-id",

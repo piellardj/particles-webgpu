@@ -2,11 +2,6 @@
 	"files": [
         "../ts/main.ts",
     ],
-    "include": [
-        "../ts/page-interface-generated.d.ts",
-        "../ts/webgpu-utils/wgsl-type.d.ts",
-        "../ts/webgpu-utils/image-type.d.ts"
-    ],
 	"compilerOptions": {
 		/* Type Checking */
 		"allowUnreachableCode": false,

@@ -1,3 +1,4 @@
+/// <reference types="../page-interface-generated" />
 /// <reference types="@webgpu/types" />
 
 function throwAndDisplayException(id: string, message: string): void {

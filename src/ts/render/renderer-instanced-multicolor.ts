@@ -1,3 +1,5 @@
+/// <reference types="../webgpu-utils/wgsl-type" />
+
 import { Renderer } from "./renderer";
 import * as WebGPU from "../webgpu-utils/webgpu-device";
 import ShaderSource from "../../shaders/draw-instanced-multicolor.wgsl";

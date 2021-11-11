@@ -14,7 +14,6 @@
   "author": "Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
   "repository": "github:piellardj/particles-webgpu",
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
     "@webgpu/types": "^0.1.7",

@@ -110,7 +110,7 @@ abstract class Parameters {
             return [r, g, b];
         } else {
             const color = Page.ColorPicker.getValue(controlId.PARTICLE_COLORPICKER_ID);
-            return [color.r / 255, color.g / 255, color.g / 255];
+            return [color.r / 255, color.g / 255, color.b / 255];
         }
     }
     public static async inputImageUrl(): Promise<string> {

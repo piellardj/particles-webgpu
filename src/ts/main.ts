@@ -3,6 +3,7 @@ import * as Image from "./image";
 import { ColorMode, Parameters } from "./parameters";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
+import * as Attractors from "./attractors";
 
 // import "./page-interface-generated";
 
@@ -11,6 +12,7 @@ async function main(): Promise<void> {
     const device = WebGPU.device as GPUDevice;
     const webgpuCanvas = new WebGPUCanvas(Page.Canvas.getCanvas());
     const engine = new Engine(webgpuCanvas.textureFormat);
+    Attractors.setContainer(Page.Canvas.getCanvasContainer());
 
     let lastRun = performance.now();
 

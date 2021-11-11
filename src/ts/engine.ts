@@ -5,15 +5,11 @@ import DrawShaderSource from "../shaders/draw.wgsl";
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
+import { Attractor, Force, setOverlays } from "./attractors";
 import { bytesToString } from "./helpers";
 import { ColorMode, Parameters } from "./parameters";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
-type Force = [number, number];
-type Attractor = {
-    position: [number, number];
-    force: number;
-}
 const MAX_ATTRACTORS = 1;
 
 type ParticlesBatch = {
@@ -320,8 +316,9 @@ class Engine {
         };
         attractor.position[0] = 2 * attractor.position[0] - 1;
         attractor.position[1] = 2 * attractor.position[1] - 1;
+        setOverlays(attractors);
+
         const uniformForce: Force = [0, 3 * Parameters.gravity];
-        const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, [attractor]);
         WebGPU.device.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
 
         for (const particlesBatch of this.particleBatches) {
@@ -517,7 +514,7 @@ class Engine {
         new Uint32Array(buffer, 12, 1).set([Parameters.bounce ? 1 : 0]);
         new Float32Array(buffer, 16, 1).set([Parameters.friction]);
         new Float32Array(buffer, 20, 1).set([aspectRatio]);
-        new Uint32Array(buffer, 24, 1).set([1]); // attractors count
+        new Uint32Array(buffer, 24, 1).set([attractors.length]);
 
         const attractorsData = [];
         for (const attractor of attractors) {

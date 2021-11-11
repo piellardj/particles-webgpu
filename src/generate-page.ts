@@ -10,7 +10,9 @@ const data = {
     introduction: ["TODO INTRO"],
     githubProjectName: "particles-web",
     additionalLinks: [],
-    styleFiles: [],
+    styleFiles: [
+        "css/attractor-overlay.css"
+    ],
     scriptFiles: [
         "script/main.js"
     ],
@@ -49,15 +51,6 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Attraction",
-                    id: "attraction-range-id",
-                    min: -1,
-                    max: 1,
-                    value: 0.7,
-                    step: 0.05
-                },
-                {
-                    type: Demopage.supportedControls.Range,
                     title: "Friction",
                     id: "friction-range-id",
                     min: 0.998,
@@ -84,6 +77,26 @@ const data = {
                     type: Demopage.supportedControls.Button,
                     id: "reset-button-id",
                     label: "Reset"
+                },
+            ]
+        },
+        {
+            title: "Attractors",
+            controls: [
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Mouse force",
+                    id: "attraction-range-id",
+                    min: -1,
+                    max: 1,
+                    value: 0.7,
+                    step: 0.05
+                },
+                {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Display",
+                    id: "display-attractors-checkbox-id",
+                    checked: true
                 },
             ]
         },
@@ -184,3 +197,5 @@ buildResult.pageScriptDeclaration = "/* tslint:disable */\n" + buildResult.pageS
 
 const SCRIPT_DECLARATION_FILEPATH = path.join(SRC_DIR, "ts", "page-interface-generated.d.ts");
 fs.writeFileSync(SCRIPT_DECLARATION_FILEPATH, buildResult.pageScriptDeclaration);
+
+fs.copyFileSync(path.join(SRC_DIR, "resources", "attractor-overlay.css"), path.join(DEST_DIR, "css", "attractor-overlay.css"));

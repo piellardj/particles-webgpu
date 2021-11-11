@@ -6,11 +6,13 @@ import ImageUrlColors from "../resources/colors.png";
 const controlId = {
     PARTICLES_COUNT_ID: "particles-count-range-id",
     SPEED_RANGE_ID: "speed-range-id",
-    ATTRACTION_RANGE_ID: "attraction-range-id",
     FRICTION_RANGE_ID: "friction-range-id",
     BOUNCE_CHECKBOX_ID: "bounce-checkbox-id",
     GRAVITY_RANGE_ID: "gravity-range-id",
     RESET_BUTTON_ID: "reset-button-id",
+
+    ATTRACTION_RANGE_ID: "attraction-range-id",
+    ATTRACTORS_DISPLAY_CHECKBOX_ID: "display-attractors-checkbox-id",
 
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
@@ -45,9 +47,6 @@ abstract class Parameters {
     public static get speed(): number {
         return Page.Range.getValue(controlId.SPEED_RANGE_ID);
     }
-    public static get attraction(): number {
-        return Page.Range.getValue(controlId.ATTRACTION_RANGE_ID);
-    }
     public static get friction(): number {
         return Page.Range.getValue(controlId.FRICTION_RANGE_ID);
     }
@@ -56,6 +55,13 @@ abstract class Parameters {
     }
     public static get gravity(): number {
         return Page.Range.getValue(controlId.GRAVITY_RANGE_ID);
+    }
+
+    public static get attraction(): number {
+        return Page.Range.getValue(controlId.ATTRACTION_RANGE_ID);
+    }
+    public static get displayAttractors(): boolean {
+        return Page.Checkbox.isChecked(controlId.ATTRACTORS_DISPLAY_CHECKBOX_ID);
     }
 
     public static get colorMode(): ColorMode {

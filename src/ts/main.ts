@@ -3,7 +3,6 @@ import * as Image from "./image";
 import { ColorMode, Parameters } from "./parameters";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
-import ImageUrl from "../static/rc/colors.png";
 
 // import "./page-interface-generated";
 
@@ -32,7 +31,9 @@ async function main(): Promise<void> {
 
             if (Parameters.colorMode === ColorMode.MULTICOLOR) {
                 const sampler = Image.getSampler();
-                const image = await Image.getTexture(ImageUrl);
+                Page.Canvas.showLoader(true);
+                const image = await Image.getTexture(Parameters.inputImageUrl);
+                Page.Canvas.showLoader(false);
                 engine.initializeColors(commandEncoder, sampler, image);
             }
         }

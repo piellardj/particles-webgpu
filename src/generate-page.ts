@@ -118,6 +118,23 @@ const data = {
                     title: "Particle color",
                     id: "particle-color-id",
                     defaultValueHex: "#FFFFFF"
+                },
+                {
+                    type: Demopage.supportedControls.Select,
+                    title: "Image",
+                    id: "image-preset-select-id",
+                    placeholder: "Custom",
+                    options: [
+                        {
+                            value: "colors",
+                            label: "Colors",
+                            checked: true,
+                        },
+                        {
+                            value: "ladybug",
+                            label: "Ladybug",
+                        },
+                    ]
                 }
             ]
         },

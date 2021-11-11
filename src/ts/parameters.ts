@@ -1,3 +1,6 @@
+import ImageUrlLadybug from "../resources/ladybug.png";
+import ImageUrlColors from "../resources/colors.png";
+
 // import "./page-interface-generated";
 
 const controlId = {
@@ -12,6 +15,7 @@ const controlId = {
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
+    IMAGE_SELECT_ID: "image-preset-select-id",
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
     OPACITY_RANGE_ID: "opacity-range-id",
@@ -22,6 +26,11 @@ type ResetObserver = () => void;
 enum ColorMode {
     UNICOLOR = "unicolor",
     MULTICOLOR = "multicolor",
+}
+
+enum ImagePreset {
+    COLORS = "colors",
+    LADYBUG = "ladybug"
 }
 
 abstract class Parameters {
@@ -83,6 +92,14 @@ abstract class Parameters {
             return [color.r / 255, color.g / 255, color.g / 255];
         }
     }
+    public static get inputImageUrl(): string {
+        const imagePreset = Page.Select.getValue(controlId.IMAGE_SELECT_ID) as ImagePreset;
+        if (imagePreset === ImagePreset.COLORS) {
+            return ImageUrlColors;
+        } else {
+            return ImageUrlLadybug;
+        }
+    }
 
     public static get spriteSize(): number {
         return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
@@ -102,6 +119,7 @@ function updateColorsVisibility(): void {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
+    Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor);
 }
 
 Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
@@ -113,6 +131,7 @@ Page.Tabs.addObserver(controlId.COLOR_MODE_TABS_ID, () => {
     }
 });
 Page.Checkbox.addObserver(controlId.COLOR_AUTO_CHECKBOX_ID, updateColorsVisibility);
+Page.Select.addObserver(controlId.IMAGE_SELECT_ID, callResetObservers);
 updateColorsVisibility();
 
 export {

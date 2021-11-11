@@ -50,6 +50,7 @@ function setOverlays(attractors: Attractor[]): void {
 function getPreset(): Attractor[] {
     const attractorsList: Attractor[] = [];
 
+    /* eslint indent: "off" */
     const preset = Parameters.attractorsPreset;
     switch (preset) {
         case AttractorsPreset.ORBIT:

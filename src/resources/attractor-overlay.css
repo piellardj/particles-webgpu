@@ -7,4 +7,5 @@
     border: 3px solid red;
     border-radius: 50%;
     background: none;
+    pointer-events: none;
 }

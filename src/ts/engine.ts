@@ -1,13 +1,13 @@
-import DrawMulticolorInstancedShaderSource from "../shaders/draw-instanced-multicolor.wgsl";
-import DrawInstancedShaderSource from "../shaders/draw-instanced.wgsl";
-import DrawMulticolorShaderSource from "../shaders/draw-multicolor.wgsl";
-import DrawShaderSource from "../shaders/draw.wgsl";
 import InitializeColorsShaderSource from "../shaders/initialize-colors.wgsl";
 import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
 import * as Attractors from "./attractors";
 import { bytesToString } from "./helpers";
 import { ColorMode, Parameters } from "./parameters";
+import { RendererInstancedMonocolor } from "./render/renderer-instanced-monocolor";
+import { RendererInstancedMulticolor } from "./render/renderer-instanced-multicolor";
+import { RendererMonocolor } from "./render/renderer-monocolor";
+import { RendererMulticolor } from "./render/renderer-multicolor";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
 const MAX_ATTRACTORS = 4;
@@ -24,37 +24,23 @@ type ParticlesBatch = {
 class Engine {
     private static readonly WORKGROUP_SIZE = 256;
 
-    private readonly quadBuffer: GPUBuffer;
-
     private readonly computePipeline: GPUComputePipeline;
-    private readonly renderPipeline: GPURenderPipeline;
-    private readonly renderMulticolorPipeline: GPURenderPipeline;
-    private readonly renderPipelineInstanced: GPURenderPipeline;
-    private readonly renderMulticolorPipelineInstanced: GPURenderPipeline;
-
     private readonly computeUniformsBuffer: GPUBuffer;
-    private readonly renderUniformsBuffer: GPUBuffer;
 
     private readonly particleBatches: ParticlesBatch[] = [];
 
-    private readonly renderBindgroup: GPUBindGroup;
-    private readonly renderMulticolorBindgroup: GPUBindGroup;
-    private readonly renderBindgroupInstanced: GPUBindGroup;
-    private readonly renderMulticolorBindgroupInstanced: GPUBindGroup;
-
     private readonly initializeColorsComputePipeline: GPUComputePipeline;
 
+    private readonly rendererMonocolor: RendererMonocolor;
+    private readonly rendererMulticolor: RendererMulticolor;
+    private readonly rendererInstancedMonocolor: RendererInstancedMonocolor;
+    private readonly rendererInstancedMulticolor: RendererInstancedMulticolor;
+
     public constructor(targetTextureFormat: GPUTextureFormat) {
-        this.quadBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
-            usage: GPUBufferUsage.VERTEX,
-            mappedAtCreation: true,
-        });
-        new Float32Array(this.quadBuffer.getMappedRange()).set([
-            -1, -1, +1, -1, +1, +1,
-            -1, -1, +1, +1, -1, +1
-        ]);
-        this.quadBuffer.unmap();
+        this.rendererMonocolor = new RendererMonocolor(targetTextureFormat);
+        this.rendererMulticolor = new RendererMulticolor(targetTextureFormat);
+        this.rendererInstancedMonocolor = new RendererInstancedMonocolor(targetTextureFormat);
+        this.rendererInstancedMulticolor = new RendererInstancedMulticolor(targetTextureFormat);
 
         this.computePipeline = WebGPU.device.createComputePipeline({
             compute: {
@@ -63,234 +49,9 @@ class Engine {
             }
         });
 
-        const colorTargetState: GPUColorTargetState = {
-            format: targetTextureFormat,
-            blend: {
-                color: {
-                    srcFactor: 'src-alpha',
-                    dstFactor: 'one',
-                    operation: 'add',
-                },
-                alpha: {
-                    srcFactor: 'zero',
-                    dstFactor: 'one',
-                    operation: 'add',
-                }
-            }
-        };
-
-        this.renderPipeline = WebGPU.device.createRenderPipeline({
-            vertex: {
-                module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
-                entryPoint: "main_vertex",
-                buffers: [
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
-                        stepMode: "vertex",
-                    }
-                ]
-            },
-            fragment: {
-                module: WebGPU.device.createShaderModule({ code: DrawShaderSource }),
-                entryPoint: "main_fragment",
-                targets: [colorTargetState],
-            },
-            primitive: {
-                cullMode: "none",
-                topology: "point-list",
-            },
-        });
-
-        this.renderMulticolorPipeline = WebGPU.device.createRenderPipeline({
-            vertex: {
-                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorShaderSource }),
-                entryPoint: "main_vertex",
-                buffers: [
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
-                        stepMode: "vertex",
-                    },
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 1,
-                                offset: 0,
-                                format: "uint32",
-                            }
-                        ],
-                        arrayStride: Uint32Array.BYTES_PER_ELEMENT,
-                        stepMode: "vertex",
-                    }
-                ]
-            },
-            fragment: {
-                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorShaderSource }),
-                entryPoint: "main_fragment",
-                targets: [colorTargetState],
-            },
-            primitive: {
-                cullMode: "none",
-                topology: "point-list",
-            },
-        });
-
-        this.renderPipelineInstanced = WebGPU.device.createRenderPipeline({
-            vertex: {
-                module: WebGPU.device.createShaderModule({ code: DrawInstancedShaderSource }),
-                entryPoint: "main_vertex",
-                buffers: [
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
-                        stepMode: "instance",
-                    },
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 1,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 2,
-                        stepMode: "vertex",
-                    }
-                ]
-            },
-            fragment: {
-                module: WebGPU.device.createShaderModule({ code: DrawInstancedShaderSource }),
-                entryPoint: "main_fragment",
-                targets: [colorTargetState],
-            },
-            primitive: {
-                cullMode: "none",
-                topology: "triangle-list",
-            },
-        });
-
-        this.renderMulticolorPipelineInstanced = WebGPU.device.createRenderPipeline({
-            vertex: {
-                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorInstancedShaderSource }),
-                entryPoint: "main_vertex",
-                buffers: [
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
-                        stepMode: "instance",
-                    },
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 1,
-                                offset: 0,
-                                format: "float32x2",
-                            }
-                        ],
-                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 2,
-                        stepMode: "vertex",
-                    },
-                    {
-                        attributes: [
-                            {
-                                shaderLocation: 2,
-                                offset: 0,
-                                format: "uint32",
-                            }
-                        ],
-                        arrayStride: Uint32Array.BYTES_PER_ELEMENT,
-                        stepMode: "instance",
-                    }
-                ]
-            },
-            fragment: {
-                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + DrawMulticolorInstancedShaderSource }),
-                entryPoint: "main_fragment",
-                targets: [colorTargetState],
-            },
-            primitive: {
-                cullMode: "none",
-                topology: "triangle-list",
-            },
-        });
-
         this.computeUniformsBuffer = WebGPU.device.createBuffer({
             size: 96,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
-        });
-
-        this.renderUniformsBuffer = WebGPU.device.createBuffer({
-            size: 24,
-            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
-        });
-        this.renderBindgroup = WebGPU.device.createBindGroup({
-            layout: this.renderPipeline.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.renderUniformsBuffer,
-                    }
-                }
-            ]
-        });
-        this.renderMulticolorBindgroup = WebGPU.device.createBindGroup({
-            layout: this.renderMulticolorPipeline.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.renderUniformsBuffer,
-                    }
-                }
-            ]
-        });
-        this.renderBindgroupInstanced = WebGPU.device.createBindGroup({
-            layout: this.renderPipelineInstanced.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.renderUniformsBuffer,
-                    }
-                }
-            ]
-        });
-        this.renderMulticolorBindgroupInstanced = WebGPU.device.createBindGroup({
-            layout: this.renderMulticolorPipelineInstanced.getBindGroupLayout(0),
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.renderUniformsBuffer,
-                    }
-                }
-            ]
         });
 
         this.initializeColorsComputePipeline = WebGPU.device.createComputePipeline({
@@ -336,45 +97,25 @@ class Engine {
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
-        const color = Parameters.particleColor;
-        const uniformsData = [color[0], color[1], color[2], Parameters.opacity, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
-        WebGPU.device.queue.writeBuffer(this.renderUniformsBuffer, 0, new Float32Array(uniformsData).buffer);
-
         let draw: (particlesBatch: ParticlesBatch) => void;
         if (Parameters.colorMode === ColorMode.UNICOLOR) {
             if (Parameters.spriteSize > 1) {
                 draw = (particlesBatch: ParticlesBatch) => {
-                    renderPassEncoder.setPipeline(this.renderPipelineInstanced);
-                    renderPassEncoder.setBindGroup(0, this.renderBindgroupInstanced);
-                    renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
-                    renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
-                    renderPassEncoder.draw(6, particlesBatch.particlesCount, 0, 0);
+                    this.rendererInstancedMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
                 };
             } else {
                 draw = (particlesBatch: ParticlesBatch) => {
-                    renderPassEncoder.setPipeline(this.renderPipeline);
-                    renderPassEncoder.setBindGroup(0, this.renderBindgroup);
-                    renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
-                    renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+                    this.rendererMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
                 };
             }
         } else {
             if (Parameters.spriteSize > 1) {
                 draw = (particlesBatch: ParticlesBatch) => {
-                    renderPassEncoder.setPipeline(this.renderMulticolorPipelineInstanced);
-                    renderPassEncoder.setBindGroup(0, this.renderMulticolorBindgroupInstanced);
-                    renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
-                    renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
-                    renderPassEncoder.setVertexBuffer(2, particlesBatch.colorsBuffer);
-                    renderPassEncoder.draw(6, particlesBatch.particlesCount, 0, 0);
+                    this.rendererInstancedMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
                 };
             } else {
                 draw = (particlesBatch: ParticlesBatch) => {
-                    renderPassEncoder.setPipeline(this.renderMulticolorPipeline);
-                    renderPassEncoder.setBindGroup(0, this.renderMulticolorBindgroup || this.renderBindgroup);
-                    renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
-                    renderPassEncoder.setVertexBuffer(1, particlesBatch.colorsBuffer);
-                    renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+                    this.rendererMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
                 };
             }
         }

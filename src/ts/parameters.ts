@@ -16,6 +16,7 @@ const controlId = {
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
     IMAGE_SELECT_ID: "image-preset-select-id",
+    IMAGE_UPLOAD_BUTTON_ID: "input-image-upload-button",
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
     OPACITY_RANGE_ID: "opacity-range-id",
@@ -32,6 +33,8 @@ enum ImagePreset {
     COLORS = "colors",
     LADYBUG = "ladybug"
 }
+
+let customImageFile: File = null;
 
 abstract class Parameters {
     public static readonly resetObservers: ResetObserver[] = [];
@@ -92,12 +95,22 @@ abstract class Parameters {
             return [color.r / 255, color.g / 255, color.g / 255];
         }
     }
-    public static get inputImageUrl(): string {
-        const imagePreset = Page.Select.getValue(controlId.IMAGE_SELECT_ID) as ImagePreset;
-        if (imagePreset === ImagePreset.COLORS) {
-            return ImageUrlColors;
+    public static async inputImageUrl(): Promise<string> {
+        if (customImageFile) {
+            return new Promise<string>((resolve: (value: string) => void) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve(reader.result.toString());
+                };
+                reader.readAsDataURL(customImageFile);
+            });
         } else {
-            return ImageUrlLadybug;
+            const imagePreset = Page.Select.getValue(controlId.IMAGE_SELECT_ID) as ImagePreset;
+            if (imagePreset === ImagePreset.COLORS) {
+                return ImageUrlColors;
+            } else {
+                return ImageUrlLadybug;
+            }
         }
     }
 
@@ -120,6 +133,7 @@ function updateColorsVisibility(): void {
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
     Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor);
+    Page.Controls.setVisibility(controlId.IMAGE_UPLOAD_BUTTON_ID, !isUnicolor);
 }
 
 Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
@@ -131,7 +145,18 @@ Page.Tabs.addObserver(controlId.COLOR_MODE_TABS_ID, () => {
     }
 });
 Page.Checkbox.addObserver(controlId.COLOR_AUTO_CHECKBOX_ID, updateColorsVisibility);
-Page.Select.addObserver(controlId.IMAGE_SELECT_ID, callResetObservers);
+Page.Select.addObserver(controlId.IMAGE_SELECT_ID, () => {
+    customImageFile = null;
+    Page.FileControl.clearFileUpload(controlId.IMAGE_UPLOAD_BUTTON_ID);
+    callResetObservers();
+});
+
+Page.FileControl.addUploadObserver(controlId.IMAGE_UPLOAD_BUTTON_ID, (filesList: FileList) => {
+    Page.Select.setValue(controlId.IMAGE_SELECT_ID, null);
+    customImageFile = filesList[0];
+    callResetObservers();
+});
+
 updateColorsVisibility();
 
 export {

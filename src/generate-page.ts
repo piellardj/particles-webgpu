@@ -135,7 +135,14 @@ const data = {
                             label: "Ladybug",
                         },
                     ]
-                }
+                },
+                {
+                    type: Demopage.supportedControls.FileUpload,
+                    title: "Custom",
+                    id: "input-image-upload-button",
+                    accept: [".png", ".jpg", ".bmp", ".webp"],
+                    defaultMessage: "Upload an image"
+                },
             ]
         },
         {

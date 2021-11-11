@@ -32,7 +32,8 @@ async function main(): Promise<void> {
             if (Parameters.colorMode === ColorMode.MULTICOLOR) {
                 const sampler = Image.getSampler();
                 Page.Canvas.showLoader(true);
-                const image = await Image.getTexture(Parameters.inputImageUrl);
+                const imageUrl = await Parameters.inputImageUrl();
+                const image = await Image.getTexture(imageUrl);
                 Page.Canvas.showLoader(false);
                 engine.initializeColors(commandEncoder, sampler, image);
             }

@@ -117,7 +117,7 @@ const data = {
                     type: Demopage.supportedControls.ColorPicker,
                     title: "Particle color",
                     id: "particle-color-id",
-                    defaultValueHex: "#FFFFFF"
+                    defaultValueHex: "#BC572F"
                 },
                 {
                     type: Demopage.supportedControls.Select,

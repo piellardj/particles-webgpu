@@ -1,4 +1,5 @@
 import { AttractorsPreset, Parameters } from "./parameters";
+import { getTime } from "./time";
 
 type Force = [number, number];
 type Attractor = {
@@ -59,20 +60,20 @@ function getPreset(): Attractor[] {
                     force: 7,
                     position: [0, 0],
                 });
-                const now = 0.0005 * performance.now();
+                const now = 0.001 * getTime();
                 attractorsList.push({
                     force: 5,
                     position: [0.4 * Math.cos(now), 0.4 * Math.sin(now)],
                 });
                 attractorsList.push({
-                    force: 5,
+                    force: 6,
                     position: [0.8 * Math.cos(-0.9 * now), 0.8 * Math.sin(-0.9 * now)],
                 });
                 break;
             }
         case AttractorsPreset.SINES:
             {
-                const now = 0.0005 * performance.now();
+                const now = 0.001 * getTime();
                 attractorsList.push({
                     force: 7,
                     position: [0.7 * Math.cos(now), 0.7 * Math.sin(2 * now)],

@@ -27,7 +27,7 @@ const controlId = {
     SHOW_INDICATORS_CHECKBOX_ID: "show-indicators-checkbox-id",
 };
 
-type ResetObserver = () => void;
+type VoidObserver = () => void;
 
 enum AttractorsPreset {
     NONE = "none",
@@ -50,7 +50,8 @@ enum ImagePreset {
 let customImageFile: File = null;
 
 abstract class Parameters {
-    public static readonly resetObservers: ResetObserver[] = [];
+    public static readonly resetObservers: VoidObserver[] = [];
+    public static readonly speedChangeObservers: VoidObserver[] = [];
 
     public static get particlesCount(): number {
         return 1000000 * Page.Range.getValue(controlId.PARTICLES_COUNT_ID);
@@ -141,6 +142,12 @@ abstract class Parameters {
         return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
     }
 }
+
+Page.Range.addObserver(controlId.SPEED_RANGE_ID, () => {
+    for (const observer of Parameters.speedChangeObservers) {
+        observer();
+    }
+});
 
 function callResetObservers(): void {
     for (const observer of Parameters.resetObservers) {

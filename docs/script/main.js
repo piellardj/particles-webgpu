@@ -1345,12 +1345,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.initialize = exports.gpu = exports.device = exports.adapter = void 0;
 function throwAndDisplayException(id, message) {
     Page.Demopage.setErrorMessage(id, message);
+    Page.Canvas.toggleFullscreen(false);
     throw new Error(message);
 }
 const gpu = navigator.gpu;
 exports.gpu = gpu;
 if (!gpu) {
-    throwAndDisplayException("webgpu-support", "Your device does not seem to support WebGPU.");
+    throwAndDisplayException("webgpu-support", "Your browser does not seem to support WebGPU.");
 }
 let adapter = null;
 exports.adapter = adapter;

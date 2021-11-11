@@ -3,12 +3,13 @@
 
 function throwAndDisplayException(id: string, message: string): void {
     Page.Demopage.setErrorMessage(id, message);
+    Page.Canvas.toggleFullscreen(false);
     throw new Error(message);
 }
 
 const gpu: GPU = navigator.gpu;
 if (!gpu) {
-    throwAndDisplayException("webgpu-support", "Your device does not seem to support WebGPU.");
+    throwAndDisplayException("webgpu-support", "Your browser does not seem to support WebGPU.");
 }
 
 let adapter: GPUAdapter | null = null;

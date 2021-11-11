@@ -23,6 +23,7 @@ const controlId = {
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
     OPACITY_RANGE_ID: "opacity-range-id",
+    SHOW_INDICATORS_CHECKBOX_ID: "show-indicators-checkbox-id",
 };
 
 type ResetObserver = () => void;
@@ -176,6 +177,11 @@ Page.FileControl.addUploadObserver(controlId.IMAGE_UPLOAD_BUTTON_ID, (filesList:
 });
 
 updateColorsVisibility();
+
+Page.Checkbox.addObserver(controlId.SHOW_INDICATORS_CHECKBOX_ID, (show: boolean) => {
+    Page.Canvas.setIndicatorsVisibility(show);
+});
+Page.Canvas.setIndicatorsVisibility(Page.Checkbox.isChecked(controlId.SHOW_INDICATORS_CHECKBOX_ID));
 
 export {
     AttractorsPreset,

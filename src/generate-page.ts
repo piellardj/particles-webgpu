@@ -159,7 +159,7 @@ const data = {
                     type: Demopage.supportedControls.ColorPicker,
                     title: "Particle color",
                     id: "particle-color-id",
-                    defaultValueHex: "#BC572F"
+                    defaultValueHex: "#BC4212"
                 },
                 {
                     type: Demopage.supportedControls.Select,
@@ -207,7 +207,13 @@ const data = {
                     max: 1,
                     value: 0.8,
                     step: 0.005
-                }
+                },
+                {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Show indicators",
+                    id: "show-indicators-checkbox-id",
+                    checked: true
+                },
             ]
         }
     ]

@@ -154,7 +154,7 @@ const data = {
                     id: "sprite-size-range-id",
                     min: 1,
                     max: 17,
-                    value: 5,
+                    value: 1,
                     step: 2
                 },
                 {

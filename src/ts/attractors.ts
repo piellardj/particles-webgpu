@@ -1,11 +1,12 @@
 import { AttractorsPreset, Parameters } from "./parameters";
-import { getTime } from "./time";
 
 type Force = [number, number];
 type Attractor = {
     position: [number, number];
     force: number;
 }
+
+let time = 0;
 
 let container: HTMLElement;
 const className = "attractor-overlay";
@@ -60,27 +61,25 @@ function getPreset(): Attractor[] {
                     force: 7,
                     position: [0, 0],
                 });
-                const now = 0.001 * getTime();
                 attractorsList.push({
                     force: 5,
-                    position: [0.4 * Math.cos(now), 0.4 * Math.sin(now)],
+                    position: [0.4 * Math.cos(time), 0.4 * Math.sin(time)],
                 });
                 attractorsList.push({
                     force: 6,
-                    position: [0.8 * Math.cos(-0.9 * now), 0.8 * Math.sin(-0.9 * now)],
+                    position: [0.8 * Math.cos(-0.9 * time), 0.8 * Math.sin(-0.9 * time)],
                 });
                 break;
             }
         case AttractorsPreset.SINES:
             {
-                const now = 0.001 * getTime();
                 attractorsList.push({
                     force: 7,
-                    position: [0.7 * Math.cos(now), 0.7 * Math.sin(2 * now)],
+                    position: [0.7 * Math.cos(time), 0.7 * Math.sin(2 * time)],
                 });
                 attractorsList.push({
                     force: 7,
-                    position: [0.7 * Math.cos(1.8 * (now + 0.5)), 0.7 * Math.sin(0.9 * (now + 0.5))],
+                    position: [0.7 * Math.cos(1.8 * (time + 0.5)), 0.7 * Math.sin(0.9 * (time + 0.5))],
                 });
                 break;
             }
@@ -114,10 +113,15 @@ function getPreset(): Attractor[] {
     return attractorsList;
 }
 
+function update(dt: number): void {
+    time += dt;
+}
+
 export {
     getPreset,
     setOverlays,
     setContainer,
+    update,
 };
 export type {
     Attractor,

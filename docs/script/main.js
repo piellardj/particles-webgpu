@@ -10,9 +10,9 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setContainer = exports.setOverlays = exports.getPreset = void 0;
+exports.update = exports.setContainer = exports.setOverlays = exports.getPreset = void 0;
 const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
-const time_1 = __webpack_require__(/*! ./time */ "./src/ts/time.ts");
+let time = 0;
 let container;
 const className = "attractor-overlay";
 function setContainer(element) {
@@ -61,27 +61,25 @@ function getPreset() {
                     force: 7,
                     position: [0, 0],
                 });
-                const now = 0.001 * (0, time_1.getTime)();
                 attractorsList.push({
                     force: 5,
-                    position: [0.4 * Math.cos(now), 0.4 * Math.sin(now)],
+                    position: [0.4 * Math.cos(time), 0.4 * Math.sin(time)],
                 });
                 attractorsList.push({
                     force: 6,
-                    position: [0.8 * Math.cos(-0.9 * now), 0.8 * Math.sin(-0.9 * now)],
+                    position: [0.8 * Math.cos(-0.9 * time), 0.8 * Math.sin(-0.9 * time)],
                 });
                 break;
             }
         case parameters_1.AttractorsPreset.SINES:
             {
-                const now = 0.001 * (0, time_1.getTime)();
                 attractorsList.push({
                     force: 7,
-                    position: [0.7 * Math.cos(now), 0.7 * Math.sin(2 * now)],
+                    position: [0.7 * Math.cos(time), 0.7 * Math.sin(2 * time)],
                 });
                 attractorsList.push({
                     force: 7,
-                    position: [0.7 * Math.cos(1.8 * (now + 0.5)), 0.7 * Math.sin(0.9 * (now + 0.5))],
+                    position: [0.7 * Math.cos(1.8 * (time + 0.5)), 0.7 * Math.sin(0.9 * (time + 0.5))],
                 });
                 break;
             }
@@ -112,6 +110,10 @@ function getPreset() {
     return attractorsList;
 }
 exports.getPreset = getPreset;
+function update(dt) {
+    time += dt;
+}
+exports.update = update;
 
 
 /***/ }),
@@ -520,19 +522,18 @@ const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameter
 const webgpu_canvas_1 = __webpack_require__(/*! ./webgpu-utils/webgpu-canvas */ "./src/ts/webgpu-utils/webgpu-canvas.ts");
 const WebGPU = __importStar(__webpack_require__(/*! ./webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
 const Attractors = __importStar(__webpack_require__(/*! ./attractors */ "./src/ts/attractors.ts"));
-const time_1 = __webpack_require__(/*! ./time */ "./src/ts/time.ts");
 async function main() {
     await WebGPU.initialize();
     const device = WebGPU.device;
     const webgpuCanvas = new webgpu_canvas_1.WebGPUCanvas(Page.Canvas.getCanvas());
     const engine = new engine_1.Engine(webgpuCanvas.textureFormat);
     Attractors.setContainer(Page.Canvas.getCanvasContainer());
-    let lastRun = (0, time_1.getTime)();
+    let lastRun = performance.now();
     let needToReset = true;
     parameters_1.Parameters.resetObservers.push(() => { needToReset = true; });
     async function mainLoop() {
-        const now = (0, time_1.getTime)();
-        const dt = 0.001 * (now - lastRun);
+        const now = performance.now();
+        const dt = parameters_1.Parameters.speed * Math.min(1 / 60, 0.001 * (now - lastRun));
         lastRun = now;
         const commandEncoder = device.createCommandEncoder();
         if (needToReset) {
@@ -549,6 +550,7 @@ async function main() {
             }
         }
         webgpuCanvas.adjustSize();
+        Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
         const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
@@ -1240,39 +1242,6 @@ class Renderer {
     }
 }
 exports.Renderer = Renderer;
-
-
-/***/ }),
-
-/***/ "./src/ts/time.ts":
-/*!************************!*\
-  !*** ./src/ts/time.ts ***!
-  \************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getTime = exports.reset = void 0;
-const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
-let now;
-let lastCheckpoint;
-let speed;
-function getTime() {
-    return now + (performance.now() - lastCheckpoint) * speed;
-}
-exports.getTime = getTime;
-parameters_1.Parameters.speedChangeObservers.push(() => {
-    now = getTime();
-    lastCheckpoint = performance.now();
-    speed = parameters_1.Parameters.speed;
-});
-function reset() {
-    now = 0;
-    lastCheckpoint = performance.now();
-    speed = parameters_1.Parameters.speed;
-}
-exports.reset = reset;
-reset();
 
 
 /***/ }),

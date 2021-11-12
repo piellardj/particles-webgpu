@@ -23,6 +23,7 @@ const controlId = {
     IMAGE_UPLOAD_BUTTON_ID: "input-image-upload-button",
 
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
+    BLENDING_CHECKBOX_ID: "blending-checkbox-id",
     OPACITY_RANGE_ID: "opacity-range-id",
     SHOW_INDICATORS_CHECKBOX_ID: "show-indicators-checkbox-id",
 };
@@ -138,6 +139,9 @@ abstract class Parameters {
     public static get spriteSize(): number {
         return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
     }
+    public static get blending(): boolean {
+        return Page.Checkbox.isChecked(controlId.BLENDING_CHECKBOX_ID);
+    }
     public static get opacity(): number {
         return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
     }
@@ -190,6 +194,11 @@ Page.Checkbox.addObserver(controlId.SHOW_INDICATORS_CHECKBOX_ID, (show: boolean)
     Page.Canvas.setIndicatorsVisibility(show);
 });
 Page.Canvas.setIndicatorsVisibility(Page.Checkbox.isChecked(controlId.SHOW_INDICATORS_CHECKBOX_ID));
+
+Page.Checkbox.addObserver(controlId.BLENDING_CHECKBOX_ID, (hasBlending: boolean) => {
+    Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, hasBlending);
+});
+Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, Page.Checkbox.isChecked(controlId.BLENDING_CHECKBOX_ID));
 
 export {
     AttractorsPreset,

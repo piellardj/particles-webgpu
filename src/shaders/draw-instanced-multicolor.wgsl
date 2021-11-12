@@ -23,6 +23,10 @@ fn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner
 
 [[stage(fragment)]]
 fn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {
-    let intensity = step(length(localPosition), 0.95);
-    return unpackColor(color, uniforms.color.a * intensity);
+    let distanceFromCenter: f32 = length(localPosition);
+    if (distanceFromCenter > 1.0) {
+        discard;
+    }
+
+    return unpackColor(color, uniforms.color.a);
 }

@@ -9,7 +9,8 @@ type Pipeline = {
 abstract class Renderer {
     private readonly uniformsBuffer: GPUBuffer;
 
-    protected pipeline: Pipeline;
+    private pipelineAdditiveBlending: Pipeline;
+    private pipelineNoBlending: Pipeline;
 
     protected constructor(private readonly targetTextureFormat: GPUTextureFormat) {
         this.uniformsBuffer = WebGPU.device.createBuffer({
@@ -19,6 +20,11 @@ abstract class Renderer {
     }
 
     protected createRenderPipelines(descriptor: GPURenderPipelineDescriptor): void {
+        descriptor.fragment.targets = [{
+            format: this.targetTextureFormat
+        }];
+        this.pipelineNoBlending = this.createPipeline(descriptor);
+
         descriptor.fragment.targets = [{
             format: this.targetTextureFormat,
             blend: {
@@ -34,13 +40,21 @@ abstract class Renderer {
                 }
             }
         }];
-        this.pipeline = this.createPipeline(descriptor);
+        this.pipelineAdditiveBlending = this.createPipeline(descriptor);
     }
 
     protected updateUniformsBuffer(canvasWidth: number, canvasHeight: number): void {
         const color = Parameters.particleColor;
         const uniformsData = [color[0], color[1], color[2], Parameters.opacity, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array(uniformsData).buffer);
+    }
+
+    protected get pipeline(): Pipeline {
+        if (Parameters.blending) {
+            return this.pipelineAdditiveBlending;
+        } else {
+            return this.pipelineNoBlending;
+        }
     }
 
     private createPipeline(descriptor: GPURenderPipelineDescriptor): Pipeline {

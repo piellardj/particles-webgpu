@@ -599,6 +599,7 @@ const controlId = {
     IMAGE_SELECT_ID: "image-preset-select-id",
     IMAGE_UPLOAD_BUTTON_ID: "input-image-upload-button",
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
+    BLENDING_CHECKBOX_ID: "blending-checkbox-id",
     OPACITY_RANGE_ID: "opacity-range-id",
     SHOW_INDICATORS_CHECKBOX_ID: "show-indicators-checkbox-id",
 };
@@ -714,6 +715,9 @@ class Parameters {
     static get spriteSize() {
         return Page.Range.getValue(controlId.SPRITE_SIZE_RANGE_ID);
     }
+    static get blending() {
+        return Page.Checkbox.isChecked(controlId.BLENDING_CHECKBOX_ID);
+    }
     static get opacity() {
         return Page.Range.getValue(controlId.OPACITY_RANGE_ID);
     }
@@ -762,6 +766,10 @@ Page.Checkbox.addObserver(controlId.SHOW_INDICATORS_CHECKBOX_ID, (show) => {
     Page.Canvas.setIndicatorsVisibility(show);
 });
 Page.Canvas.setIndicatorsVisibility(Page.Checkbox.isChecked(controlId.SHOW_INDICATORS_CHECKBOX_ID));
+Page.Checkbox.addObserver(controlId.BLENDING_CHECKBOX_ID, (hasBlending) => {
+    Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, hasBlending);
+});
+Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, Page.Checkbox.isChecked(controlId.BLENDING_CHECKBOX_ID));
 
 
 /***/ }),
@@ -1204,6 +1212,10 @@ class Renderer {
     }
     createRenderPipelines(descriptor) {
         descriptor.fragment.targets = [{
+                format: this.targetTextureFormat
+            }];
+        this.pipelineNoBlending = this.createPipeline(descriptor);
+        descriptor.fragment.targets = [{
                 format: this.targetTextureFormat,
                 blend: {
                     color: {
@@ -1218,12 +1230,20 @@ class Renderer {
                     }
                 }
             }];
-        this.pipeline = this.createPipeline(descriptor);
+        this.pipelineAdditiveBlending = this.createPipeline(descriptor);
     }
     updateUniformsBuffer(canvasWidth, canvasHeight) {
         const color = parameters_1.Parameters.particleColor;
         const uniformsData = [color[0], color[1], color[2], parameters_1.Parameters.opacity, parameters_1.Parameters.spriteSize / canvasWidth, parameters_1.Parameters.spriteSize / canvasHeight];
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array(uniformsData).buffer);
+    }
+    get pipeline() {
+        if (parameters_1.Parameters.blending) {
+            return this.pipelineAdditiveBlending;
+        }
+        else {
+            return this.pipelineNoBlending;
+        }
     }
     createPipeline(descriptor) {
         const pipeline = WebGPU.device.createRenderPipeline(descriptor);
@@ -1400,7 +1420,7 @@ module.exports = __webpack_require__.p + "..\\rc\\images\\a17685859ad122820967.p
   \****************************************************/
 /***/ ((module) => {
 
-module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n    [[location(1),interpolate(flat)]] color: u32;\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>, [[location(2)]] inColor: u32) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = inColor;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {\r\n    let intensity = step(length(localPosition), 0.95);\r\n    return unpackColor(color, uniforms.color.a * intensity);\r\n}\r\n";
+module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n    [[location(1),interpolate(flat)]] color: u32;\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>, [[location(2)]] inColor: u32) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = inColor;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return unpackColor(color, uniforms.color.a);\r\n}\r\n";
 
 /***/ }),
 
@@ -1410,7 +1430,7 @@ module.exports = "[[block]] struct Uniforms {   //             align(16)  size(2
   \*****************************************/
 /***/ ((module) => {
 
-module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>) -> [[location(0)]] vec4<f32> {\r\n    let intensity = step(length(localPosition), 0.95);\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a * intensity);\r\n}\r\n";
+module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);\r\n}\r\n";
 
 /***/ }),
 

@@ -202,6 +202,12 @@ const data = {
                     step: 2
                 },
                 {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Blending",
+                    id: "blending-checkbox-id",
+                    checked: true
+                },
+                {
                     type: Demopage.supportedControls.Range,
                     title: "Particle opacity",
                     id: "opacity-range-id",

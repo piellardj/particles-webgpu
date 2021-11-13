@@ -19,6 +19,7 @@ const controlId = {
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
+    COLOR_SOURCE_TABS_ID: "color-source-tabs-id",
     IMAGE_SELECT_ID: "image-preset-select-id",
     IMAGE_UPLOAD_BUTTON_ID: "input-image-upload-button",
 
@@ -41,6 +42,11 @@ enum AttractorsPreset {
 enum ColorMode {
     UNICOLOR = "unicolor",
     MULTICOLOR = "multicolor",
+}
+
+enum ColorSource {
+    IMAGE = "image",
+    VELOCITY = "velocity",
 }
 
 enum ImagePreset {
@@ -117,6 +123,9 @@ abstract class Parameters {
             return [color.r / 255, color.g / 255, color.b / 255];
         }
     }
+    public static get colorSource(): ColorSource {
+        return Page.Tabs.getValues(controlId.COLOR_SOURCE_TABS_ID)[0] as ColorSource;
+    }
     public static async inputImageUrl(): Promise<string> {
         if (customImageFile) {
             return new Promise<string>((resolve: (value: string) => void) => {
@@ -161,10 +170,12 @@ function callResetObservers(): void {
 
 function updateColorsVisibility(): void {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
+    const imageColorSource = (Parameters.colorSource === ColorSource.IMAGE);
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
-    Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor);
-    Page.Controls.setVisibility(controlId.IMAGE_UPLOAD_BUTTON_ID, !isUnicolor);
+    Page.Controls.setVisibility(controlId.COLOR_SOURCE_TABS_ID, !isUnicolor);
+    Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor && imageColorSource);
+    Page.Controls.setVisibility(controlId.IMAGE_UPLOAD_BUTTON_ID, !isUnicolor && imageColorSource);
 }
 
 Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
@@ -176,6 +187,7 @@ Page.Tabs.addObserver(controlId.COLOR_MODE_TABS_ID, () => {
     }
 });
 Page.Checkbox.addObserver(controlId.COLOR_AUTO_CHECKBOX_ID, updateColorsVisibility);
+Page.Tabs.addObserver(controlId.COLOR_SOURCE_TABS_ID, updateColorsVisibility);
 Page.Select.addObserver(controlId.IMAGE_SELECT_ID, () => {
     customImageFile = null;
     Page.FileControl.clearFileUpload(controlId.IMAGE_UPLOAD_BUTTON_ID);
@@ -203,5 +215,6 @@ Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, Page.Checkbox.isChecked(
 export {
     AttractorsPreset,
     ColorMode,
+    ColorSource,
     Parameters,
 };

@@ -6,12 +6,14 @@ import UpdateShaderSource from "../shaders/update.wgsl";
 import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
 import * as Attractors from "./attractors";
 import { bytesToString } from "./helpers";
-import { ColorMode, Parameters } from "./parameters";
+import { ColorMode, ColorSource, Parameters } from "./parameters";
 import { Renderer } from "./render/renderer";
 import { RendererInstancedMonocolor } from "./render/renderer-instanced-monocolor";
 import { RendererInstancedMulticolor } from "./render/renderer-instanced-multicolor";
+import { RendererInstancedMulticolorVelocity } from "./render/renderer-instanced-multicolor-velocity";
 import { RendererMonocolor } from "./render/renderer-monocolor";
 import { RendererMulticolor } from "./render/renderer-multicolor";
+import { RendererMulticolorVelocity } from "./render/renderer-multicolor-velocity";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
 const MAX_ATTRACTORS = 4;
@@ -37,14 +39,18 @@ class Engine {
 
     private readonly rendererMonocolor: RendererMonocolor;
     private readonly rendererMulticolor: RendererMulticolor;
+    private readonly rendererMulticolorVelocity: RendererMulticolorVelocity;
     private readonly rendererInstancedMonocolor: RendererInstancedMonocolor;
     private readonly rendererInstancedMulticolor: RendererInstancedMulticolor;
+    private readonly rendererInstancedMulticolorVelocity: RendererInstancedMulticolorVelocity;
 
     public constructor(targetTextureFormat: GPUTextureFormat) {
         this.rendererMonocolor = new RendererMonocolor(targetTextureFormat);
         this.rendererMulticolor = new RendererMulticolor(targetTextureFormat);
+        this.rendererMulticolorVelocity = new RendererMulticolorVelocity(targetTextureFormat);
         this.rendererInstancedMonocolor = new RendererInstancedMonocolor(targetTextureFormat);
         this.rendererInstancedMulticolor = new RendererInstancedMulticolor(targetTextureFormat);
+        this.rendererInstancedMulticolorVelocity = new RendererInstancedMulticolorVelocity(targetTextureFormat);
 
         this.computePipeline = WebGPU.device.createComputePipeline({
             compute: {
@@ -109,11 +115,17 @@ class Engine {
             } else {
                 renderer = this.rendererMonocolor;
             }
-        } else {
+        } else if (Parameters.colorSource === ColorSource.IMAGE) {
             if (instanced) {
                 renderer = this.rendererInstancedMulticolor;
             } else {
                 renderer = this.rendererMulticolor;
+            }
+        } else {
+            if (instanced) {
+                renderer = this.rendererInstancedMulticolorVelocity;
+            } else {
+                renderer = this.rendererMulticolorVelocity;
             }
         }
 

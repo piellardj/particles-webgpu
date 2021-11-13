@@ -164,6 +164,23 @@ const data = {
                     defaultValueHex: "#BC4212"
                 },
                 {
+                    type: Demopage.supportedControls.Tabs,
+                    title: "Source",
+                    id: "color-source-tabs-id",
+                    unique: true,
+                    options: [
+                        {
+                            value: "image",
+                            label: "From image",
+                            checked: true,
+                        },
+                        {
+                            value: "velocity",
+                            label: "From velocity",
+                        },
+                    ]
+                },
+                {
                     type: Demopage.supportedControls.Select,
                     title: "Image",
                     id: "image-preset-select-id",

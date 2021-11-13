@@ -159,8 +159,10 @@ const helpers_1 = __webpack_require__(/*! ./helpers */ "./src/ts/helpers.ts");
 const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 const renderer_instanced_monocolor_1 = __webpack_require__(/*! ./render/renderer-instanced-monocolor */ "./src/ts/render/renderer-instanced-monocolor.ts");
 const renderer_instanced_multicolor_1 = __webpack_require__(/*! ./render/renderer-instanced-multicolor */ "./src/ts/render/renderer-instanced-multicolor.ts");
+const renderer_instanced_multicolor_velocity_1 = __webpack_require__(/*! ./render/renderer-instanced-multicolor-velocity */ "./src/ts/render/renderer-instanced-multicolor-velocity.ts");
 const renderer_monocolor_1 = __webpack_require__(/*! ./render/renderer-monocolor */ "./src/ts/render/renderer-monocolor.ts");
 const renderer_multicolor_1 = __webpack_require__(/*! ./render/renderer-multicolor */ "./src/ts/render/renderer-multicolor.ts");
+const renderer_multicolor_velocity_1 = __webpack_require__(/*! ./render/renderer-multicolor-velocity */ "./src/ts/render/renderer-multicolor-velocity.ts");
 const WebGPU = __importStar(__webpack_require__(/*! ./webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
 const MAX_ATTRACTORS = 4;
 class Engine {
@@ -168,8 +170,10 @@ class Engine {
         this.particleBatches = [];
         this.rendererMonocolor = new renderer_monocolor_1.RendererMonocolor(targetTextureFormat);
         this.rendererMulticolor = new renderer_multicolor_1.RendererMulticolor(targetTextureFormat);
+        this.rendererMulticolorVelocity = new renderer_multicolor_velocity_1.RendererMulticolorVelocity(targetTextureFormat);
         this.rendererInstancedMonocolor = new renderer_instanced_monocolor_1.RendererInstancedMonocolor(targetTextureFormat);
         this.rendererInstancedMulticolor = new renderer_instanced_multicolor_1.RendererInstancedMulticolor(targetTextureFormat);
+        this.rendererInstancedMulticolorVelocity = new renderer_instanced_multicolor_velocity_1.RendererInstancedMulticolorVelocity(targetTextureFormat);
         this.computePipeline = WebGPU.device.createComputePipeline({
             compute: {
                 module: WebGPU.device.createShaderModule({ code: update_wgsl_1.default }),
@@ -218,33 +222,34 @@ class Engine {
         }
     }
     draw(canvasWidth, canvasHeight, renderPassEncoder) {
-        let draw;
+        let renderer;
+        const instanced = (parameters_1.Parameters.spriteSize > 1);
         if (parameters_1.Parameters.colorMode === parameters_1.ColorMode.UNICOLOR) {
-            if (parameters_1.Parameters.spriteSize > 1) {
-                draw = (particlesBatch) => {
-                    this.rendererInstancedMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+            if (instanced) {
+                renderer = this.rendererInstancedMonocolor;
             }
             else {
-                draw = (particlesBatch) => {
-                    this.rendererMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+                renderer = this.rendererMonocolor;
+            }
+        }
+        else if (parameters_1.Parameters.colorSource === parameters_1.ColorSource.IMAGE) {
+            if (instanced) {
+                renderer = this.rendererInstancedMulticolor;
+            }
+            else {
+                renderer = this.rendererMulticolor;
             }
         }
         else {
-            if (parameters_1.Parameters.spriteSize > 1) {
-                draw = (particlesBatch) => {
-                    this.rendererInstancedMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+            if (instanced) {
+                renderer = this.rendererInstancedMulticolorVelocity;
             }
             else {
-                draw = (particlesBatch) => {
-                    this.rendererMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+                renderer = this.rendererMulticolorVelocity;
             }
         }
         for (const particlesBatch of this.particleBatches) {
-            draw(particlesBatch);
+            renderer.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
         }
     }
     reset(wantedParticlesCount) {
@@ -580,7 +585,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Parameters = exports.ColorMode = exports.AttractorsPreset = void 0;
+exports.Parameters = exports.ColorSource = exports.ColorMode = exports.AttractorsPreset = void 0;
 const ladybug_png_1 = __importDefault(__webpack_require__(/*! ../resources/ladybug.png */ "./src/resources/ladybug.png"));
 const colors_png_1 = __importDefault(__webpack_require__(/*! ../resources/colors.png */ "./src/resources/colors.png"));
 const controlId = {
@@ -596,6 +601,7 @@ const controlId = {
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
+    COLOR_SOURCE_TABS_ID: "color-source-tabs-id",
     IMAGE_SELECT_ID: "image-preset-select-id",
     IMAGE_UPLOAD_BUTTON_ID: "input-image-upload-button",
     SPRITE_SIZE_RANGE_ID: "sprite-size-range-id",
@@ -618,6 +624,12 @@ var ColorMode;
     ColorMode["MULTICOLOR"] = "multicolor";
 })(ColorMode || (ColorMode = {}));
 exports.ColorMode = ColorMode;
+var ColorSource;
+(function (ColorSource) {
+    ColorSource["IMAGE"] = "image";
+    ColorSource["VELOCITY"] = "velocity";
+})(ColorSource || (ColorSource = {}));
+exports.ColorSource = ColorSource;
 var ImagePreset;
 (function (ImagePreset) {
     ImagePreset["COLORS"] = "colors";
@@ -692,6 +704,9 @@ class Parameters {
             return [color.r / 255, color.g / 255, color.b / 255];
         }
     }
+    static get colorSource() {
+        return Page.Tabs.getValues(controlId.COLOR_SOURCE_TABS_ID)[0];
+    }
     static async inputImageUrl() {
         if (customImageFile) {
             return new Promise((resolve) => {
@@ -737,10 +752,12 @@ function callResetObservers() {
 }
 function updateColorsVisibility() {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
+    const imageColorSource = (Parameters.colorSource === ColorSource.IMAGE);
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
-    Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor);
-    Page.Controls.setVisibility(controlId.IMAGE_UPLOAD_BUTTON_ID, !isUnicolor);
+    Page.Controls.setVisibility(controlId.COLOR_SOURCE_TABS_ID, !isUnicolor);
+    Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor && imageColorSource);
+    Page.Controls.setVisibility(controlId.IMAGE_UPLOAD_BUTTON_ID, !isUnicolor && imageColorSource);
 }
 Page.Range.addLazyObserver(controlId.PARTICLES_COUNT_ID, callResetObservers);
 Page.Button.addObserver(controlId.RESET_BUTTON_ID, callResetObservers);
@@ -751,6 +768,7 @@ Page.Tabs.addObserver(controlId.COLOR_MODE_TABS_ID, () => {
     }
 });
 Page.Checkbox.addObserver(controlId.COLOR_AUTO_CHECKBOX_ID, updateColorsVisibility);
+Page.Tabs.addObserver(controlId.COLOR_SOURCE_TABS_ID, updateColorsVisibility);
 Page.Select.addObserver(controlId.IMAGE_SELECT_ID, () => {
     customImageFile = null;
     Page.FileControl.clearFileUpload(controlId.IMAGE_UPLOAD_BUTTON_ID);
@@ -874,6 +892,116 @@ class RendererInstancedMonocolor extends renderer_1.Renderer {
     }
 }
 exports.RendererInstancedMonocolor = RendererInstancedMonocolor;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-instanced-multicolor-velocity.ts":
+/*!*****************************************************************!*\
+  !*** ./src/ts/render/renderer-instanced-multicolor-velocity.ts ***!
+  \*****************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+/// <reference types="../webgpu-utils/wgsl-type" />
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererInstancedMulticolorVelocity = void 0;
+const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+const draw_instanced_multicolor_velocity_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/draw-instanced-multicolor-velocity.wgsl */ "./src/shaders/draw-instanced-multicolor-velocity.wgsl"));
+const color_part_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/utils/color.part.wgsl */ "./src/shaders/utils/color.part.wgsl"));
+class RendererInstancedMulticolorVelocity extends renderer_1.Renderer {
+    constructor(targetTextureFormat) {
+        super(targetTextureFormat);
+        this.quadBuffer = WebGPU.device.createBuffer({
+            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
+            usage: GPUBufferUsage.VERTEX,
+            mappedAtCreation: true,
+        });
+        new Float32Array(this.quadBuffer.getMappedRange()).set([
+            -1, -1, +1, -1, +1, +1,
+            -1, -1, +1, +1, -1, +1
+        ]);
+        this.quadBuffer.unmap();
+        const shaderModule = WebGPU.device.createShaderModule({ code: color_part_wgsl_1.default + draw_instanced_multicolor_velocity_wgsl_1.default });
+        this.createRenderPipelines({
+            vertex: {
+                module: shaderModule,
+                entryPoint: "main_vertex",
+                buffers: [
+                    {
+                        attributes: [
+                            {
+                                shaderLocation: 0,
+                                offset: 0,
+                                format: "float32x2",
+                            },
+                            {
+                                shaderLocation: 1,
+                                offset: Float32Array.BYTES_PER_ELEMENT * 2,
+                                format: "float32x2",
+                            }
+                        ],
+                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                        stepMode: "instance",
+                    },
+                    {
+                        attributes: [
+                            {
+                                shaderLocation: 2,
+                                offset: 0,
+                                format: "float32x2",
+                            }
+                        ],
+                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 2,
+                        stepMode: "vertex",
+                    }
+                ]
+            },
+            fragment: {
+                module: shaderModule,
+                entryPoint: "main_fragment",
+                targets: [],
+            },
+            primitive: {
+                cullMode: "none",
+                topology: "triangle-list",
+            },
+        });
+    }
+    draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch) {
+        super.updateUniformsBuffer(canvasWidth, canvasHeight);
+        const pipeline = this.pipeline;
+        renderPassEncoder.setPipeline(pipeline.renderPipeline);
+        renderPassEncoder.setBindGroup(0, pipeline.uniformsBindgroup);
+        renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
+        renderPassEncoder.setVertexBuffer(1, this.quadBuffer);
+        renderPassEncoder.draw(6, particlesBatch.particlesCount, 0, 0);
+    }
+}
+exports.RendererInstancedMulticolorVelocity = RendererInstancedMulticolorVelocity;
 
 
 /***/ }),
@@ -1073,6 +1201,94 @@ class RendererMonocolor extends renderer_1.Renderer {
     }
 }
 exports.RendererMonocolor = RendererMonocolor;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-multicolor-velocity.ts":
+/*!*******************************************************!*\
+  !*** ./src/ts/render/renderer-multicolor-velocity.ts ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+/// <reference types="../webgpu-utils/wgsl-type" />
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererMulticolorVelocity = void 0;
+const draw_multicolor_velocity_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/draw-multicolor-velocity.wgsl */ "./src/shaders/draw-multicolor-velocity.wgsl"));
+const color_part_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/utils/color.part.wgsl */ "./src/shaders/utils/color.part.wgsl"));
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
+class RendererMulticolorVelocity extends renderer_1.Renderer {
+    constructor(targetTextureFormat) {
+        super(targetTextureFormat);
+        const shaderModule = WebGPU.device.createShaderModule({ code: color_part_wgsl_1.default + draw_multicolor_velocity_wgsl_1.default });
+        this.createRenderPipelines({
+            vertex: {
+                module: shaderModule,
+                entryPoint: "main_vertex",
+                buffers: [
+                    {
+                        attributes: [
+                            {
+                                shaderLocation: 0,
+                                offset: 0,
+                                format: "float32x2",
+                            },
+                            {
+                                shaderLocation: 1,
+                                offset: Float32Array.BYTES_PER_ELEMENT * 2,
+                                format: "float32x2",
+                            }
+                        ],
+                        arrayStride: Float32Array.BYTES_PER_ELEMENT * 4,
+                        stepMode: "vertex",
+                    }
+                ]
+            },
+            fragment: {
+                module: shaderModule,
+                entryPoint: "main_fragment",
+                targets: [],
+            },
+            primitive: {
+                cullMode: "none",
+                topology: "point-list",
+            },
+        });
+    }
+    draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch) {
+        super.updateUniformsBuffer(canvasWidth, canvasHeight);
+        const pipeline = this.pipeline;
+        renderPassEncoder.setPipeline(pipeline.renderPipeline);
+        renderPassEncoder.setBindGroup(0, pipeline.uniformsBindgroup);
+        renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
+        renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+    }
+}
+exports.RendererMulticolorVelocity = RendererMulticolorVelocity;
 
 
 /***/ }),
@@ -1414,6 +1630,16 @@ module.exports = __webpack_require__.p + "..\\rc\\images\\a17685859ad122820967.p
 
 /***/ }),
 
+/***/ "./src/shaders/draw-instanced-multicolor-velocity.wgsl":
+/*!*************************************************************!*\
+  !*** ./src/shaders/draw-instanced-multicolor-velocity.wgsl ***!
+  \*************************************************************/
+/***/ ((module) => {
+
+module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n    [[location(1),interpolate(flat)]] color: vec4<f32>;\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inVelocity: vec2<f32>, [[location(2)]] quadCorner: vec2<f32>) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: vec4<f32>) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return color;\r\n}\r\n";
+
+/***/ }),
+
 /***/ "./src/shaders/draw-instanced-multicolor.wgsl":
 /*!****************************************************!*\
   !*** ./src/shaders/draw-instanced-multicolor.wgsl ***!
@@ -1431,6 +1657,16 @@ module.exports = "[[block]] struct Uniforms {   //             align(16)  size(2
 /***/ ((module) => {
 
 module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);\r\n}\r\n";
+
+/***/ }),
+
+/***/ "./src/shaders/draw-multicolor-velocity.wgsl":
+/*!***************************************************!*\
+  !*** ./src/shaders/draw-multicolor-velocity.wgsl ***!
+  \***************************************************/
+/***/ ((module) => {
+
+module.exports = "struct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0),interpolate(flat)]] color: vec4<f32>;\r\n};\r\n\r\n[[block]] struct Uniforms {   //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inVelocity: vec2<f32>) -> VSOut {\r\n    var output: VSOut;\r\n    output.position = vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n    output.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return output;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0),interpolate(flat)]] color: vec4<f32>) -> [[location(0)]] vec4<f32> {\r\n    return color;\r\n}\r\n";
 
 /***/ }),
 
@@ -1480,7 +1716,7 @@ module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity:
   \*******************************************/
 /***/ ((module) => {
 
-module.exports = "fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {\r\n    return vec4<f32>(\r\n        f32(packed & 255u) / 255.0,\r\n        f32((packed >> 8u) & 255u) / 255.0,\r\n        f32((packed >> 16u) & 255u) / 255.0,\r\n        alpha\r\n    );\r\n}\r\n\r\nfn packColor(color: vec3<f32>) -> u32 {\r\n    let colorUint = vec3<u32>(color * 255.0);\r\n\r\n    return colorUint.r |\r\n        (colorUint.g << 8u) |\r\n        (colorUint.b << 16u);\r\n}\r\n";
+module.exports = "fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {\r\n    return vec4<f32>(\r\n        f32(packed & 255u) / 255.0,\r\n        f32((packed >> 8u) & 255u) / 255.0,\r\n        f32((packed >> 16u) & 255u) / 255.0,\r\n        alpha\r\n    );\r\n}\r\n\r\nfn packColor(color: vec3<f32>) -> u32 {\r\n    let colorUint = vec3<u32>(color * 255.0);\r\n\r\n    return colorUint.r |\r\n        (colorUint.g << 8u) |\r\n        (colorUint.b << 16u);\r\n}\r\n\r\nfn colorFromHue(normalizedHue: f32, alpha: f32) -> vec4<f32> {\r\n    let value = normalizedHue * 6.0;\r\n    if (value < 1.0) {\r\n        return vec4<f32>(1.0, value, 0.0, alpha);\r\n    } elseif (value < 2.0) {\r\n        return vec4<f32>(2.0 - value, 1.0, 0.0, alpha);\r\n    } elseif (value < 3.0) {\r\n        return vec4<f32>(0.0, 1.0, value - 2.0, alpha);\r\n    } elseif (value < 4.0) {\r\n        return vec4<f32>(0.0, 4.0 - value, 1.0, alpha);\r\n    } elseif (value < 5.0) {\r\n        return vec4<f32>(value - 4.0, 0.0, 1.0, alpha);\r\n    }\r\n    return vec4<f32>(1.0, 0.0, 6.0 - value, alpha);\r\n}\r\n\r\nfn colorFromVelocity(velocity: vec2<f32>, alpha: f32) -> vec4<f32> {\r\n    let normalizedHue: f32 = 0.5 + 0.5 * atan2(velocity.y, velocity.x) / 3.14159;\r\n    return colorFromHue(normalizedHue, alpha);\r\n}\r\n";
 
 /***/ })
 

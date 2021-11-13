@@ -82,7 +82,7 @@ class RendererInstancedMulticolor extends Renderer {
         });
     }
 
-    public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void {
+    public override draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void {
         super.updateUniformsBuffer(canvasWidth, canvasHeight);
 
         const pipeline = this.pipeline;

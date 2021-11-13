@@ -6,6 +6,12 @@ type Pipeline = {
     uniformsBindgroup: GPUBindGroup;
 }
 
+type RenderableParticlesBatch = {
+    gpuBuffer: GPUBuffer;
+    colorsBuffer: GPUBuffer;
+    particlesCount: number;
+}
+
 abstract class Renderer {
     private readonly uniformsBuffer: GPUBuffer;
 
@@ -18,6 +24,8 @@ abstract class Renderer {
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }
+
+    public abstract draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void;
 
     protected createRenderPipelines(descriptor: GPURenderPipelineDescriptor): void {
         descriptor.fragment.targets = [{

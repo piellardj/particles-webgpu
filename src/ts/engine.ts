@@ -7,6 +7,7 @@ import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
 import * as Attractors from "./attractors";
 import { bytesToString } from "./helpers";
 import { ColorMode, Parameters } from "./parameters";
+import { Renderer } from "./render/renderer";
 import { RendererInstancedMonocolor } from "./render/renderer-instanced-monocolor";
 import { RendererInstancedMulticolor } from "./render/renderer-instanced-multicolor";
 import { RendererMonocolor } from "./render/renderer-monocolor";
@@ -100,31 +101,24 @@ class Engine {
     }
 
     public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
-        let draw: (particlesBatch: ParticlesBatch) => void;
+        let renderer: Renderer;
+        const instanced = (Parameters.spriteSize > 1);
         if (Parameters.colorMode === ColorMode.UNICOLOR) {
-            if (Parameters.spriteSize > 1) {
-                draw = (particlesBatch: ParticlesBatch) => {
-                    this.rendererInstancedMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+            if (instanced) {
+                renderer = this.rendererInstancedMonocolor;
             } else {
-                draw = (particlesBatch: ParticlesBatch) => {
-                    this.rendererMonocolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+                renderer = this.rendererMonocolor;
             }
         } else {
-            if (Parameters.spriteSize > 1) {
-                draw = (particlesBatch: ParticlesBatch) => {
-                    this.rendererInstancedMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+            if (instanced) {
+                renderer = this.rendererInstancedMulticolor;
             } else {
-                draw = (particlesBatch: ParticlesBatch) => {
-                    this.rendererMulticolor.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-                };
+                renderer = this.rendererMulticolor;
             }
         }
 
         for (const particlesBatch of this.particleBatches) {
-            draw(particlesBatch);
+            renderer.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
         }
     }
 

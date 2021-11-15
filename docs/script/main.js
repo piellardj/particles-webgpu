@@ -826,20 +826,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RendererInstancedMonocolor = void 0;
 const draw_instanced_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/draw-instanced.wgsl */ "./src/shaders/draw-instanced.wgsl"));
 const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
-const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
-class RendererInstancedMonocolor extends renderer_1.Renderer {
+const renderer_instanced_1 = __webpack_require__(/*! ./renderer-instanced */ "./src/ts/render/renderer-instanced.ts");
+class RendererInstancedMonocolor extends renderer_instanced_1.RendererInstanced {
     constructor(targetTextureFormat) {
         super(targetTextureFormat);
-        this.quadBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
-            usage: GPUBufferUsage.VERTEX,
-            mappedAtCreation: true,
-        });
-        new Float32Array(this.quadBuffer.getMappedRange()).set([
-            -1, -1, +1, -1, +1, +1,
-            -1, -1, +1, +1, -1, +1
-        ]);
-        this.quadBuffer.unmap();
         const shaderModule = WebGPU.device.createShaderModule({ code: draw_instanced_wgsl_1.default });
         this.createRenderPipelines({
             vertex: {
@@ -928,23 +918,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RendererInstancedMulticolorVelocity = void 0;
-const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
-const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
 const draw_instanced_multicolor_velocity_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/draw-instanced-multicolor-velocity.wgsl */ "./src/shaders/draw-instanced-multicolor-velocity.wgsl"));
 const color_part_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/utils/color.part.wgsl */ "./src/shaders/utils/color.part.wgsl"));
-class RendererInstancedMulticolorVelocity extends renderer_1.Renderer {
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+const renderer_instanced_1 = __webpack_require__(/*! ./renderer-instanced */ "./src/ts/render/renderer-instanced.ts");
+class RendererInstancedMulticolorVelocity extends renderer_instanced_1.RendererInstanced {
     constructor(targetTextureFormat) {
         super(targetTextureFormat);
-        this.quadBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
-            usage: GPUBufferUsage.VERTEX,
-            mappedAtCreation: true,
-        });
-        new Float32Array(this.quadBuffer.getMappedRange()).set([
-            -1, -1, +1, -1, +1, +1,
-            -1, -1, +1, +1, -1, +1
-        ]);
-        this.quadBuffer.unmap();
         const shaderModule = WebGPU.device.createShaderModule({ code: color_part_wgsl_1.default + draw_instanced_multicolor_velocity_wgsl_1.default });
         this.createRenderPipelines({
             vertex: {
@@ -1038,23 +1018,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RendererInstancedMulticolor = void 0;
-const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
-const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
 const draw_instanced_multicolor_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/draw-instanced-multicolor.wgsl */ "./src/shaders/draw-instanced-multicolor.wgsl"));
 const color_part_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/utils/color.part.wgsl */ "./src/shaders/utils/color.part.wgsl"));
-class RendererInstancedMulticolor extends renderer_1.Renderer {
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+const renderer_instanced_1 = __webpack_require__(/*! ./renderer-instanced */ "./src/ts/render/renderer-instanced.ts");
+class RendererInstancedMulticolor extends renderer_instanced_1.RendererInstanced {
     constructor(targetTextureFormat) {
         super(targetTextureFormat);
-        this.quadBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
-            usage: GPUBufferUsage.VERTEX,
-            mappedAtCreation: true,
-        });
-        new Float32Array(this.quadBuffer.getMappedRange()).set([
-            -1, -1, +1, -1, +1, +1,
-            -1, -1, +1, +1, -1, +1
-        ]);
-        this.quadBuffer.unmap();
         const shaderModule = WebGPU.device.createShaderModule({ code: color_part_wgsl_1.default + draw_instanced_multicolor_wgsl_1.default });
         this.createRenderPipelines({
             vertex: {
@@ -1119,6 +1089,57 @@ class RendererInstancedMulticolor extends renderer_1.Renderer {
     }
 }
 exports.RendererInstancedMulticolor = RendererInstancedMulticolor;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-instanced.ts":
+/*!*********************************************!*\
+  !*** ./src/ts/render/renderer-instanced.ts ***!
+  \*********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+/// <reference types="../webgpu-utils/wgsl-type" />
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererInstanced = void 0;
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+const renderer_1 = __webpack_require__(/*! ./renderer */ "./src/ts/render/renderer.ts");
+class RendererInstanced extends renderer_1.Renderer {
+    constructor(targetTextureFormat) {
+        super(targetTextureFormat);
+        this.quadBuffer = WebGPU.device.createBuffer({
+            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
+            usage: GPUBufferUsage.VERTEX,
+            mappedAtCreation: true,
+        });
+        new Float32Array(this.quadBuffer.getMappedRange()).set([
+            -1, -1, +1, -1, +1, +1,
+            -1, -1, +1, +1, -1, +1
+        ]);
+        this.quadBuffer.unmap();
+    }
+}
+exports.RendererInstanced = RendererInstanced;
 
 
 /***/ }),

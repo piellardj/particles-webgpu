@@ -1,31 +1,18 @@
 /// <reference types="../webgpu-utils/wgsl-type" />
 
-import { Renderer } from "./renderer";
-import * as WebGPU from "../webgpu-utils/webgpu-device";
 import ShaderSource from "../../shaders/draw-instanced-multicolor-velocity.wgsl";
 import ColorShaderPartSource from "../../shaders/utils/color.part.wgsl";
+import * as WebGPU from "../webgpu-utils/webgpu-device";
+import { RendererInstanced } from "./renderer-instanced";
 
 type RenderableParticlesBatch = {
     gpuBuffer: GPUBuffer;
     particlesCount: number;
 }
 
-class RendererInstancedMulticolorVelocity extends Renderer {
-    private readonly quadBuffer: GPUBuffer;
-
+class RendererInstancedMulticolorVelocity extends RendererInstanced {
     public constructor(targetTextureFormat: GPUTextureFormat) {
         super(targetTextureFormat);
-
-        this.quadBuffer = WebGPU.device.createBuffer({
-            size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
-            usage: GPUBufferUsage.VERTEX,
-            mappedAtCreation: true,
-        });
-        new Float32Array(this.quadBuffer.getMappedRange()).set([
-            -1, -1, +1, -1, +1, +1,
-            -1, -1, +1, +1, -1, +1
-        ]);
-        this.quadBuffer.unmap();
 
         const shaderModule = WebGPU.device.createShaderModule({ code: ColorShaderPartSource + ShaderSource });
 

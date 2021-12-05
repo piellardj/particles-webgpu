@@ -686,7 +686,7 @@ var Page;
                 for (var i = 0; i < elements.length; i++) {
                     this.valueElements.push(elements[i]);
                 }
-                this.containerElement.style.width = this.computeMinimumWidth() + "px";
+                this.containerElement.style.width = "".concat(this.computeMinimumWidth(), "px");
                 document.addEventListener("click", function (event) {
                     var clickedElement = event.target;
                     var isExpanded = _this.containerElement.classList.contains(Select.EXPANDED_CLASS);
@@ -735,7 +735,7 @@ var Page;
                                 return;
                             }
                         }
-                        console.log("No \"" + v + "\" value for \"" + this.id + "\" select.");
+                        console.log("No \"".concat(v, "\" value for \"").concat(this.id, "\" select."));
                     }
                 },
                 enumerable: false,
@@ -1306,19 +1306,19 @@ var Page;
             Popup.prototype.updateAppearance = function () {
                 var rgb = ColorSpace.hsvToRgb(this.hsv);
                 var hexString = ColorSpace.rgbToHex(rgb);
-                var rgbString = "rgb(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ")"; // real coor
-                var hslString = "hsl(" + Math.round(this.hsv.h) + ", 100%, 50%)"; // pure color
+                var rgbString = "rgb(".concat(rgb.r, ", ").concat(rgb.g, ", ").concat(rgb.b, ")"); // real coor
+                var hslString = "hsl(".concat(Math.round(this.hsv.h), ", 100%, 50%)"); // pure color
                 // colors
-                this.hueColorFilter.style.background = "linear-gradient(to right, white, " + hslString + ")";
+                this.hueColorFilter.style.background = "linear-gradient(to right, white, ".concat(hslString, ")");
                 this.hueCursor.style.background = hslString;
                 this.valueSaturationCursor.style.background = rgbString;
                 this.previewColor.style.background = rgbString;
                 // text
                 this.previewHexaValue.value = hexString.substring(1);
-                this.previewRgbValue.textContent = rgb.r + ", " + rgb.g + ", " + rgb.b;
+                this.previewRgbValue.textContent = "".concat(rgb.r, ", ").concat(rgb.g, ", ").concat(rgb.b);
                 var percentSaturation = Popup.percentageString(this.hsv.s);
                 var percentValue = Popup.percentageString(this.hsv.v);
-                this.previewHslValue.textContent = Math.round(this.hsv.h) + "\u00B0, " + percentSaturation + ", " + percentValue;
+                this.previewHslValue.textContent = "".concat(Math.round(this.hsv.h), "\u00B0, ").concat(percentSaturation, ", ").concat(percentValue);
                 // cursors positions
                 this.hueCursor.style.left = Popup.percentageString(this.hsv.h / 360);
                 this.valueSaturationCursor.style.left = percentSaturation;

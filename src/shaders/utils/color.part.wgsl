@@ -1,18 +1,9 @@
 fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {
-    return vec4<f32>(
-        f32(packed & 255u) / 255.0,
-        f32((packed >> 8u) & 255u) / 255.0,
-        f32((packed >> 16u) & 255u) / 255.0,
-        alpha
-    );
+    return vec4<f32>(unpack4x8unorm(packed).rgb, alpha);
 }
 
 fn packColor(color: vec3<f32>) -> u32 {
-    let colorUint = vec3<u32>(color * 255.0);
-
-    return colorUint.r |
-        (colorUint.g << 8u) |
-        (colorUint.b << 16u);
+    return pack4x8unorm(vec4<f32>(color, 1.0));
 }
 
 fn colorFromHue(normalizedHue: f32, alpha: f32) -> vec4<f32> {

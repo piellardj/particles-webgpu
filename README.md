@@ -130,3 +130,6 @@ One way to use Float16 for storage would be to use a [`rgba16float`](https://www
 One issue I would have if I used a `rgba16float` texture for storing the position/velocity in a texel would be to initialize this texture. One way to fill a texture is to use the `GPUDevice.GPUQueue.writeTexture` method, by passing it an `ArrayBuffer`. However, sadly in Javascript there is no TypedArray for Float16: there are amongst others `Uint8Array`, `Uint16Array`, `Uint32Array`, `BigUint64Array`, `Float32Array` and `Float64Array` however there is no `Float16Array`. I don't know why this type is lacking but I feel like it would be useful. To avoid this issue, I would have either
 - to craft on CPU-side Float16 with bit manipulations
 - or to initialize the texture on the GPU. Initial positions are random and having nice random in shaders is a bit tricky. WGSL support bit operations on ui32, so I suppose a simple PCG random number generator could be implemented in a compute shader (maybe by using built-ins such as `GlobalInvocationId` as part of the seed ?).
+
+### Data packing
+WebGPU offers nice data packing builtin functions ([see spec here](https://www.w3.org/TR/WGSL/#pack-builtin-functions)) such as `pack4x8unorm` and `unpack4x8unorm`, which allow compact packing of `vec4<f32>` into `u32` (useful for storing colors for instance).

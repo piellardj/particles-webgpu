@@ -28,7 +28,7 @@ struct Attractor {                                 //             align(8)  size
 [[group(0), binding(0)]] var<storage,read_write> particlesStorage: ParticlesBuffer;
 [[group(0), binding(1)]] var<uniform> uniforms: Uniforms;
 
-[[stage(compute), workgroup_size(256)]]
+@stage(compute) @workgroup_size(256)
 fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
     let index: u32 = GlobalInvocationID.x;
 

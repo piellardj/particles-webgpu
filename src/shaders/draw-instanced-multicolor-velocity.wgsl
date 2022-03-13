@@ -11,7 +11,7 @@ struct VertexOutput {
 
 [[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
 
-[[stage(vertex)]]
+@stage(vertex)
 fn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inVelocity: vec2<f32>, @location(2) quadCorner: vec2<f32>) -> VertexOutput {
     var vsOut: VertexOutput;
     vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);
@@ -21,7 +21,7 @@ fn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inVelocity: vec2
     return vsOut;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main_fragment(@location(0) localPosition: vec2<f32>, @location(1) @interpolate(flat) color: vec4<f32>) -> @location(0) vec4<f32> {
     let distanceFromCenter: f32 = length(localPosition);
     if (distanceFromCenter > 1.0) {

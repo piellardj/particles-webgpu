@@ -1,4 +1,4 @@
-[[stage(vertex)]]
+@stage(vertex)
 fn main_vertex(@location(0) inPosition: vec2<f32>) -> [[builtin(position)]] vec4<f32> {
     return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);
 }
@@ -9,7 +9,7 @@ fn main_vertex(@location(0) inPosition: vec2<f32>) -> [[builtin(position)]] vec4
 
 [[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main_fragment() -> @location(0) vec4<f32> {
     return vec4<f32>(uniforms.color);
 }

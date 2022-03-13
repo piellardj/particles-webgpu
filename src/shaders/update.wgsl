@@ -22,7 +22,7 @@ struct Uniforms {                                  //             align(8)  size
     aspectRatio: f32;                              // offset(20)  align(4)  size(4)
     attractorsCount: u32;                          // offset(24)  align(4)  size(4)
     // -- implicit padding --                      // offset(28)            size(4)
-    [[align(16)]] attractors: array<Attractor, 4>; // offset(32)  align(16) size(16) stride(16)
+    @align(16) attractors: array<Attractor, 4>;    // offset(32)  align(16) size(16) stride(16)
 };
 
 @group(0) @binding(0) var<storage,read_write> particlesStorage: ParticlesBuffer;

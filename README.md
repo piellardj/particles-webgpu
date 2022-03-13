@@ -115,7 +115,7 @@ struct Uniforms {
     singleFloat: f32;
 };
 ```
-It is worth noting that one can explicit alignment and stride of each property with by decorating them with the WGSL attributes `[[align(X)]]` and `[[stride(Y)]]`.
+It is worth noting that one can explicit alignment and stride of each property with by decorating them with the WGSL attributes `@align(X)` and `@stride(Y)`.
 
 ### Usage of Float16
 #### Float16 in WGSL

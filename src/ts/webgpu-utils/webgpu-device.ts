@@ -21,8 +21,8 @@ async function requestDevice(): Promise<void> {
         if (!adapter) {
             throwAndDisplayException("webgpu-adapter", "Request for GPU adapter failed.");
         }
-        if (adapter.isSoftware) {
-            Page.Demopage.setErrorMessage("webgpu-is-software", "The retrieved GPU adapter is software. The performance might be degraded.");
+        if (adapter.isFallbackAdapter) {
+            Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
         }
         device = await adapter.requestDevice();
     }

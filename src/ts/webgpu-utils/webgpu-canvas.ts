@@ -52,7 +52,8 @@ class WebGPUCanvas {
     public getRenderPassDescriptor(): GPURenderPassDescriptor {
         const colorAttachment: GPURenderPassColorAttachment = {
             view: this.context.getCurrentTexture().createView(),
-            loadValue: this.clearColor,
+            loadOp: 'clear',
+            clearValue: this.clearColor,
             storeOp: 'store'
         };
 

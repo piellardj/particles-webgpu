@@ -129,7 +129,11 @@ exports.update = update;
 /// <reference types="./webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -218,7 +222,7 @@ class Engine {
             computePass.setPipeline(this.computePipeline);
             computePass.setBindGroup(0, particlesBatch.computeBindgroup);
             computePass.dispatch(particlesBatch.dispatchSize);
-            computePass.endPass();
+            computePass.end();
         }
     }
     draw(canvasWidth, canvasHeight, renderPassEncoder) {
@@ -359,7 +363,7 @@ class Engine {
             computePass.setBindGroup(0, particlesBatch.initializeColorsComputeBindgroup);
             computePass.setBindGroup(1, textureBindgroup);
             computePass.dispatch(particlesBatch.dispatchSize);
-            computePass.endPass();
+            computePass.end();
         }
     }
     buildComputeUniforms(dt, aspectRatio, force, attractors) {
@@ -430,7 +434,11 @@ exports.bytesToString = bytesToString;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -503,7 +511,11 @@ exports.getSampler = getSampler;
 /// <reference types="./page-interface-generated" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -561,7 +573,7 @@ async function main() {
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
         webgpuCanvas.setFullcanvasScissor(renderPassEncoder);
         engine.draw(webgpuCanvas.width, webgpuCanvas.height, renderPassEncoder);
-        renderPassEncoder.endPass();
+        renderPassEncoder.end();
         device.queue.submit([commandEncoder.finish()]);
         requestAnimationFrame(mainLoop);
     }
@@ -802,7 +814,11 @@ Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, Page.Checkbox.isChecked(
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -896,7 +912,11 @@ exports.RendererInstancedMonocolor = RendererInstancedMonocolor;
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -996,7 +1016,11 @@ exports.RendererInstancedMulticolorVelocity = RendererInstancedMulticolorVelocit
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1103,7 +1127,11 @@ exports.RendererInstancedMulticolor = RendererInstancedMulticolor;
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1154,7 +1182,11 @@ exports.RendererInstanced = RendererInstanced;
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1236,7 +1268,11 @@ exports.RendererMonocolor = RendererMonocolor;
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1324,7 +1360,11 @@ exports.RendererMulticolorVelocity = RendererMulticolorVelocity;
 /// <reference types="../webgpu-utils/wgsl-type" />
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1418,7 +1458,11 @@ exports.RendererMulticolor = RendererMulticolor;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1512,7 +1556,11 @@ exports.Renderer = Renderer;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -1569,7 +1617,8 @@ class WebGPUCanvas {
     getRenderPassDescriptor() {
         const colorAttachment = {
             view: this.context.getCurrentTexture().createView(),
-            loadValue: this.clearColor,
+            loadOp: 'clear',
+            clearValue: this.clearColor,
             storeOp: 'store'
         };
         const renderPassDesc = {
@@ -1620,8 +1669,8 @@ async function requestDevice() {
         if (!adapter) {
             throwAndDisplayException("webgpu-adapter", "Request for GPU adapter failed.");
         }
-        if (adapter.isSoftware) {
-            Page.Demopage.setErrorMessage("webgpu-is-software", "The retrieved GPU adapter is software. The performance might be degraded.");
+        if (adapter.isFallbackAdapter) {
+            Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
         }
         exports.device = device = await adapter.requestDevice();
     }
@@ -1657,7 +1706,7 @@ module.exports = __webpack_require__.p + "..\\rc\\images\\a17685859ad122820967.p
   \*************************************************************/
 /***/ ((module) => {
 
-module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n    [[location(1),interpolate(flat)]] color: vec4<f32>;\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inVelocity: vec2<f32>, [[location(2)]] quadCorner: vec2<f32>) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: vec4<f32>) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return color;\r\n}\r\n";
+module.exports = "struct Uniforms {             //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) localPosition: vec2<f32>; // in {-1, +1}^2\r\n    @location(1) @interpolate(flat) color: vec4<f32>;\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inVelocity: vec2<f32>, @location(2) quadCorner: vec2<f32>) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return vsOut;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) localPosition: vec2<f32>, @location(1) @interpolate(flat) color: vec4<f32>) -> @location(0) vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return color;\r\n}\r\n";
 
 /***/ }),
 
@@ -1667,7 +1716,7 @@ module.exports = "[[block]] struct Uniforms {   //             align(16)  size(2
   \****************************************************/
 /***/ ((module) => {
 
-module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n    [[location(1),interpolate(flat)]] color: u32;\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>, [[location(2)]] inColor: u32) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = inColor;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>, [[location(1),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return unpackColor(color, uniforms.color.a);\r\n}\r\n";
+module.exports = "struct Uniforms {             //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VertexOutput {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) localPosition: vec2<f32>; // in {-1, +1}^2\r\n    @location(1) @interpolate(flat) color: u32;\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>, @location(2) inColor: u32) -> VertexOutput {\r\n    var vsOut: VertexOutput;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    vsOut.color = inColor;\r\n    return vsOut;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) localPosition: vec2<f32>, @location(1) @interpolate(flat) color: u32) -> @location(0) vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return unpackColor(color, uniforms.color.a);\r\n}\r\n";
 
 /***/ }),
 
@@ -1677,7 +1726,7 @@ module.exports = "[[block]] struct Uniforms {   //             align(16)  size(2
   \*****************************************/
 /***/ ((module) => {
 
-module.exports = "[[block]] struct Uniforms {   //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0)]] localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0)]] localPosition: vec2<f32>) -> [[location(0)]] vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);\r\n}\r\n";
+module.exports = "struct Uniforms {             //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) localPosition: vec2<f32>) -> @location(0) vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);\r\n}\r\n";
 
 /***/ }),
 
@@ -1687,7 +1736,7 @@ module.exports = "[[block]] struct Uniforms {   //             align(16)  size(2
   \***************************************************/
 /***/ ((module) => {
 
-module.exports = "struct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0),interpolate(flat)]] color: vec4<f32>;\r\n};\r\n\r\n[[block]] struct Uniforms {   //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inVelocity: vec2<f32>) -> VSOut {\r\n    var output: VSOut;\r\n    output.position = vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n    output.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return output;\r\n}\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0),interpolate(flat)]] color: vec4<f32>) -> [[location(0)]] vec4<f32> {\r\n    return color;\r\n}\r\n";
+module.exports = "struct VSOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) @interpolate(flat) color: vec4<f32>;\r\n};\r\n\r\nstruct Uniforms {             //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inVelocity: vec2<f32>) -> VSOut {\r\n    var output: VSOut;\r\n    output.position = vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n    output.color = colorFromVelocity(inVelocity, uniforms.color.a);\r\n    return output;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) @interpolate(flat) color: vec4<f32>) -> @location(0) vec4<f32> {\r\n    return color;\r\n}\r\n";
 
 /***/ }),
 
@@ -1697,7 +1746,7 @@ module.exports = "struct VSOut {\r\n    [[builtin(position)]] position: vec4<f32
   \******************************************/
 /***/ ((module) => {
 
-module.exports = "struct VSOut {\r\n    [[builtin(position)]] position: vec4<f32>;\r\n    [[location(0),interpolate(flat)]] color: u32;\r\n};\r\n\r\n[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>, [[location(1)]] inColor: u32) -> VSOut {\r\n    var output: VSOut;\r\n    output.position = vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n    output.color = inColor;\r\n    return output;\r\n}\r\n\r\n[[block]] struct Uniforms {   //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment([[location(0),interpolate(flat)]] color: u32) -> [[location(0)]] vec4<f32> {\r\n    return unpackColor(color, uniforms.color.a);\r\n}\r\n";
+module.exports = "struct VSOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) @interpolate(flat) color: u32;\r\n};\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inColor: u32) -> VSOut {\r\n    var output: VSOut;\r\n    output.position = vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n    output.color = inColor;\r\n    return output;\r\n}\r\n\r\nstruct Uniforms {             //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) @interpolate(flat) color: u32) -> @location(0) vec4<f32> {\r\n    return unpackColor(color, uniforms.color.a);\r\n}\r\n";
 
 /***/ }),
 
@@ -1707,7 +1756,7 @@ module.exports = "struct VSOut {\r\n    [[builtin(position)]] position: vec4<f32
   \*******************************/
 /***/ ((module) => {
 
-module.exports = "[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition: vec2<f32>) -> [[builtin(position)]] vec4<f32> {\r\n    return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n}\r\n\r\n[[block]] struct Uniforms {   //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(fragment)]]\r\nfn main_fragment() -> [[location(0)]] vec4<f32> {\r\n    return vec4<f32>(uniforms.color);\r\n}\r\n";
+module.exports = "@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>) -> @builtin(position) vec4<f32> {\r\n    return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n}\r\n\r\nstruct Uniforms {             //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(fragment)\r\nfn main_fragment() -> @location(0) vec4<f32> {\r\n    return vec4<f32>(uniforms.color);\r\n}\r\n";
 
 /***/ }),
 
@@ -1717,7 +1766,7 @@ module.exports = "[[stage(vertex)]]\r\nfn main_vertex([[location(0)]] inPosition
   \********************************************/
 /***/ ((module) => {
 
-module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity: vec2<f32>;\r\n};\r\n\r\n[[block]] struct ParticlesBuffer {\r\n    particles: array<Particle>;\r\n};\r\n\r\n[[block]] struct ColorsBuffer {\r\n    color: array<u32>;\r\n};\r\n\r\n[[group(0), binding(0)]] var<storage,read> particlesStorage: ParticlesBuffer;\r\n[[group(0), binding(1)]] var<storage,write> colorsStorage: ColorsBuffer;\r\n[[group(1), binding(0)]] var inputSampler : sampler;\r\n[[group(1), binding(1)]] var inputTexture: texture_2d<f32>;\r\n\r\n[[stage(compute), workgroup_size(256)]]\r\nfn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n    let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);\r\n\r\n    let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;\r\n    let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;\r\n    colorsStorage.color[index] = packColor(color);\r\n}\r\n";
+module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity: vec2<f32>;\r\n};\r\n\r\nstruct ParticlesBuffer {\r\n    particles: array<Particle>;\r\n};\r\n\r\nstruct ColorsBuffer {\r\n    color: array<u32>;\r\n};\r\n\r\n@group(0) @binding(0) var<storage,read> particlesStorage: ParticlesBuffer;\r\n@group(0) @binding(1) var<storage,write> colorsStorage: ColorsBuffer;\r\n@group(1) @binding(0) var inputSampler : sampler;\r\n@group(1) @binding(1) var inputTexture: texture_2d<f32>;\r\n\r\n@stage(compute) @workgroup_size(256)\r\nfn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n    let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);\r\n\r\n    let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;\r\n    let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;\r\n    colorsStorage.color[index] = packColor(color);\r\n}\r\n";
 
 /***/ }),
 
@@ -1727,7 +1776,7 @@ module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity:
   \*********************************/
 /***/ ((module) => {
 
-module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity: vec2<f32>;\r\n};\r\n\r\n[[block]] struct ParticlesBuffer {\r\n    particles: array<Particle>;\r\n};\r\n\r\nstruct Attractor {                                 //             align(8)  size(16)\r\n    position: vec2<f32>;                           // offset(0)   align(8)  size(8)\r\n    force: f32;                                    // offset(8)   align(4)  size(4)\r\n    // -- implicit padding --                      // offset(12)            size(4)\r\n};\r\n\r\n[[block]] struct Uniforms {                        //             align(8)  size(48)\r\n    force: vec2<f32>;                              // offset(0)   align(8)  size(8)\r\n    dt: f32;                                       // offset(8)   align(4)  size(4)\r\n    bounce: u32;                                   // offset(12)  align(4)  size(4)\r\n\r\n    friction: f32;                                 // offset(16)  align(4)  size(4)\r\n    aspectRatio: f32;                              // offset(20)  align(4)  size(4)\r\n    attractorsCount: u32;                          // offset(24)  align(4)  size(4)\r\n    // -- implicit padding --                      // offset(28)            size(4)\r\n    [[align(16)]] attractors: array<Attractor, 4>; // offset(32)  align(16) size(16) stride(16)\r\n};\r\n\r\n[[group(0), binding(0)]] var<storage,read_write> particlesStorage: ParticlesBuffer;\r\n[[group(0), binding(1)]] var<uniform> uniforms: Uniforms;\r\n\r\n[[stage(compute), workgroup_size(256)]]\r\nfn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n\r\n    var particle = particlesStorage.particles[index];\r\n\r\n    let applyAspectRatio = vec2<f32>(uniforms.aspectRatio, 1.0);\r\n\r\n    var force: vec2<f32> = uniforms.force * applyAspectRatio;\r\n    for (var i = 0u; i < uniforms.attractorsCount; i = i + 1u) {\r\n        var toAttractor: vec2<f32> = (uniforms.attractors[i].position - particle.position) * applyAspectRatio;\r\n        let squaredDistance: f32 = dot(toAttractor, toAttractor);\r\n        force = force + uniforms.attractors[i].force * toAttractor / (squaredDistance + 0.01);\r\n    }\r\n\r\n    particle.velocity = uniforms.friction * (particle.velocity + uniforms.dt * force);\r\n    particle.position = particle.position + uniforms.dt * particle.velocity / applyAspectRatio;\r\n\r\n    if (uniforms.bounce != 0u) {\r\n        if (particle.position.x < -1.0) {\r\n            particle.position.x = -2.0 - particle.position.x;\r\n            particle.velocity.x = -particle.velocity.x;\r\n        }\r\n        if (particle.position.y < -1.0) {\r\n            particle.position.y = -2.0 - particle.position.y;\r\n            particle.velocity.y = -particle.velocity.y;\r\n        }\r\n\r\n        if (particle.position.x > 1.0) {\r\n            particle.position.x = 2.0 - particle.position.x;\r\n            particle.velocity.x = -particle.velocity.x;\r\n        }\r\n        if (particle.position.y > 1.0) {\r\n            particle.position.y = 2.0 - particle.position.y;\r\n            particle.velocity.y = -particle.velocity.y;\r\n        }\r\n    }\r\n\r\n    particlesStorage.particles[index] = particle;\r\n}\r\n";
+module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity: vec2<f32>;\r\n};\r\n\r\nstruct ParticlesBuffer {\r\n    particles: array<Particle>;\r\n};\r\n\r\nstruct Attractor {                                 //             align(8)  size(16)\r\n    position: vec2<f32>;                           // offset(0)   align(8)  size(8)\r\n    force: f32;                                    // offset(8)   align(4)  size(4)\r\n    // -- implicit padding --                      // offset(12)            size(4)\r\n};\r\n\r\nstruct Uniforms {                                  //             align(8)  size(48)\r\n    force: vec2<f32>;                              // offset(0)   align(8)  size(8)\r\n    dt: f32;                                       // offset(8)   align(4)  size(4)\r\n    bounce: u32;                                   // offset(12)  align(4)  size(4)\r\n\r\n    friction: f32;                                 // offset(16)  align(4)  size(4)\r\n    aspectRatio: f32;                              // offset(20)  align(4)  size(4)\r\n    attractorsCount: u32;                          // offset(24)  align(4)  size(4)\r\n    // -- implicit padding --                      // offset(28)            size(4)\r\n    @align(16) attractors: array<Attractor, 4>;    // offset(32)  align(16) size(16) stride(16)\r\n};\r\n\r\n@group(0) @binding(0) var<storage,read_write> particlesStorage: ParticlesBuffer;\r\n@group(0) @binding(1) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(compute) @workgroup_size(256)\r\nfn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n\r\n    var particle = particlesStorage.particles[index];\r\n\r\n    let applyAspectRatio = vec2<f32>(uniforms.aspectRatio, 1.0);\r\n\r\n    var force: vec2<f32> = uniforms.force * applyAspectRatio;\r\n    for (var i = 0u; i < uniforms.attractorsCount; i = i + 1u) {\r\n        var toAttractor: vec2<f32> = (uniforms.attractors[i].position - particle.position) * applyAspectRatio;\r\n        let squaredDistance: f32 = dot(toAttractor, toAttractor);\r\n        force = force + uniforms.attractors[i].force * toAttractor / (squaredDistance + 0.01);\r\n    }\r\n\r\n    particle.velocity = uniforms.friction * (particle.velocity + uniforms.dt * force);\r\n    particle.position = particle.position + uniforms.dt * particle.velocity / applyAspectRatio;\r\n\r\n    if (uniforms.bounce != 0u) {\r\n        if (particle.position.x < -1.0) {\r\n            particle.position.x = -2.0 - particle.position.x;\r\n            particle.velocity.x = -particle.velocity.x;\r\n        }\r\n        if (particle.position.y < -1.0) {\r\n            particle.position.y = -2.0 - particle.position.y;\r\n            particle.velocity.y = -particle.velocity.y;\r\n        }\r\n\r\n        if (particle.position.x > 1.0) {\r\n            particle.position.x = 2.0 - particle.position.x;\r\n            particle.velocity.x = -particle.velocity.x;\r\n        }\r\n        if (particle.position.y > 1.0) {\r\n            particle.position.y = 2.0 - particle.position.y;\r\n            particle.velocity.y = -particle.velocity.y;\r\n        }\r\n    }\r\n\r\n    particlesStorage.particles[index] = particle;\r\n}\r\n";
 
 /***/ }),
 
@@ -1737,7 +1786,7 @@ module.exports = "struct Particle {\r\n    position: vec2<f32>;\r\n    velocity:
   \*******************************************/
 /***/ ((module) => {
 
-module.exports = "fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {\r\n    return vec4<f32>(unpack4x8unorm(packed).rgb, alpha);\r\n}\r\n\r\nfn packColor(color: vec3<f32>) -> u32 {\r\n    return pack4x8unorm(vec4<f32>(color, 1.0));\r\n}\r\n\r\nfn colorFromHue(normalizedHue: f32, alpha: f32) -> vec4<f32> {\r\n    let value = normalizedHue * 6.0;\r\n    if (value < 1.0) {\r\n        return vec4<f32>(1.0, value, 0.0, alpha);\r\n    } elseif (value < 2.0) {\r\n        return vec4<f32>(2.0 - value, 1.0, 0.0, alpha);\r\n    } elseif (value < 3.0) {\r\n        return vec4<f32>(0.0, 1.0, value - 2.0, alpha);\r\n    } elseif (value < 4.0) {\r\n        return vec4<f32>(0.0, 4.0 - value, 1.0, alpha);\r\n    } elseif (value < 5.0) {\r\n        return vec4<f32>(value - 4.0, 0.0, 1.0, alpha);\r\n    }\r\n    return vec4<f32>(1.0, 0.0, 6.0 - value, alpha);\r\n}\r\n\r\nfn colorFromVelocity(velocity: vec2<f32>, alpha: f32) -> vec4<f32> {\r\n    let normalizedHue: f32 = 0.5 + 0.5 * atan2(velocity.y, velocity.x) / 3.14159;\r\n    return colorFromHue(normalizedHue, alpha);\r\n}\r\n";
+module.exports = "fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {\r\n    return vec4<f32>(unpack4x8unorm(packed).rgb, alpha);\r\n}\r\n\r\nfn packColor(color: vec3<f32>) -> u32 {\r\n    return pack4x8unorm(vec4<f32>(color, 1.0));\r\n}\r\n\r\nfn colorFromHue(normalizedHue: f32, alpha: f32) -> vec4<f32> {\r\n    let value = normalizedHue * 6.0;\r\n    if (value < 1.0) {\r\n        return vec4<f32>(1.0, value, 0.0, alpha);\r\n    } else if (value < 2.0) {\r\n        return vec4<f32>(2.0 - value, 1.0, 0.0, alpha);\r\n    } else if (value < 3.0) {\r\n        return vec4<f32>(0.0, 1.0, value - 2.0, alpha);\r\n    } else if (value < 4.0) {\r\n        return vec4<f32>(0.0, 4.0 - value, 1.0, alpha);\r\n    } else if (value < 5.0) {\r\n        return vec4<f32>(value - 4.0, 0.0, 1.0, alpha);\r\n    }\r\n    return vec4<f32>(1.0, 0.0, 6.0 - value, alpha);\r\n}\r\n\r\nfn colorFromVelocity(velocity: vec2<f32>, alpha: f32) -> vec4<f32> {\r\n    let normalizedHue: f32 = 0.5 + 0.5 * atan2(velocity.y, velocity.x) / 3.14159;\r\n    return colorFromHue(normalizedHue, alpha);\r\n}\r\n";
 
 /***/ })
 

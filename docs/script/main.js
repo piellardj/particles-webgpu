@@ -1665,7 +1665,9 @@ let device = null;
 exports.device = device;
 async function requestDevice() {
     if (!device) {
-        exports.adapter = adapter = await gpu.requestAdapter();
+        exports.adapter = adapter = await gpu.requestAdapter({
+            powerPreference: "high-performance"
+        });
         if (!adapter) {
             throwAndDisplayException("webgpu-adapter", "Request for GPU adapter failed.");
         }

@@ -1,5 +1,5 @@
 struct VSOut {
-    [[builtin(position)]] position: vec4<f32>;
+    @builtin(position) position: vec4<f32>;
     @location(0) @interpolate(flat) color: u32;
 };
 

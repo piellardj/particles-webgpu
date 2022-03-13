@@ -1,5 +1,5 @@
 @stage(vertex)
-fn main_vertex(@location(0) inPosition: vec2<f32>) -> [[builtin(position)]] vec4<f32> {
+fn main_vertex(@location(0) inPosition: vec2<f32>) -> @builtin(position) vec4<f32> {
     return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);
 }
 

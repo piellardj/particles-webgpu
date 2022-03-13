@@ -17,7 +17,7 @@ struct Particle {
 [[group(1), binding(1)]] var inputTexture: texture_2d<f32>;
 
 @stage(compute) @workgroup_size(256)
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let index: u32 = GlobalInvocationID.x;
     let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);
 

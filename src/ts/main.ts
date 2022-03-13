@@ -50,7 +50,7 @@ async function main(): Promise<void> {
         webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
         webgpuCanvas.setFullcanvasScissor(renderPassEncoder);
         engine.draw(webgpuCanvas.width, webgpuCanvas.height, renderPassEncoder);
-        renderPassEncoder.endPass();
+        renderPassEncoder.end();
 
         device.queue.submit([commandEncoder.finish()]);
 

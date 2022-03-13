@@ -102,7 +102,7 @@ class Engine {
             computePass.setPipeline(this.computePipeline);
             computePass.setBindGroup(0, particlesBatch.computeBindgroup);
             computePass.dispatch(particlesBatch.dispatchSize);
-            computePass.endPass();
+            computePass.end();
         }
     }
 
@@ -253,7 +253,7 @@ class Engine {
             computePass.setBindGroup(0, particlesBatch.initializeColorsComputeBindgroup);
             computePass.setBindGroup(1, textureBindgroup);
             computePass.dispatch(particlesBatch.dispatchSize);
-            computePass.endPass();
+            computePass.end();
         }
     }
 

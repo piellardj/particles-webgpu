@@ -8,7 +8,7 @@ struct VSOut {
     @location(0) localPosition: vec2<f32>; // in {-1, +1}^2
 };
 
-[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
 
 @stage(vertex)
 fn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>) -> VSOut {

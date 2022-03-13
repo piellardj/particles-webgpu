@@ -7,7 +7,7 @@ struct Uniforms {             //             align(16)  size(16)
     color: vec4<f32>;         // offset(0)   align(16)  size(16)
 };
 
-[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
 
 @stage(fragment)
 fn main_fragment() -> @location(0) vec4<f32> {

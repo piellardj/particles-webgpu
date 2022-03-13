@@ -25,8 +25,8 @@ struct Uniforms {                                  //             align(8)  size
     [[align(16)]] attractors: array<Attractor, 4>; // offset(32)  align(16) size(16) stride(16)
 };
 
-[[group(0), binding(0)]] var<storage,read_write> particlesStorage: ParticlesBuffer;
-[[group(0), binding(1)]] var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<storage,read_write> particlesStorage: ParticlesBuffer;
+@group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
 @stage(compute) @workgroup_size(256)
 fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {

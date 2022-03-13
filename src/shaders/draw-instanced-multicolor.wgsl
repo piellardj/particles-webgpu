@@ -9,7 +9,7 @@ struct VertexOutput {
     @location(1) @interpolate(flat) color: u32;
 };
 
-[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
 
 @stage(vertex)
 fn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>, @location(2) inColor: u32) -> VertexOutput {

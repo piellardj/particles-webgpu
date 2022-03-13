@@ -34,7 +34,7 @@ struct Uniforms {
     singleFloat: f32;
     vecFloat: vec2<f32>;
 };
-[[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
 ```
 and here is how I first created it and included it (javascript):
 ```javascript

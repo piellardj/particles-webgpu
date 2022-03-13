@@ -3,7 +3,7 @@ struct Particle {
     velocity: vec2<f32>;
 };
 
-[[block]] struct ParticlesBuffer {
+struct ParticlesBuffer {
     particles: array<Particle>;
 };
 
@@ -13,7 +13,7 @@ struct Attractor {                                 //             align(8)  size
     // -- implicit padding --                      // offset(12)            size(4)
 };
 
-[[block]] struct Uniforms {                        //             align(8)  size(48)
+struct Uniforms {                                  //             align(8)  size(48)
     force: vec2<f32>;                              // offset(0)   align(8)  size(8)
     dt: f32;                                       // offset(8)   align(4)  size(4)
     bounce: u32;                                   // offset(12)  align(4)  size(4)

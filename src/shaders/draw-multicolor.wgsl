@@ -11,7 +11,7 @@ fn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) inColor: u32) ->
     return output;
 }
 
-[[block]] struct Uniforms {   //             align(16)  size(16)
+struct Uniforms {             //             align(16)  size(16)
     color: vec4<f32>;         // offset(0)   align(16)  size(16)
 };
 

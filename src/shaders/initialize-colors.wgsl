@@ -3,11 +3,11 @@ struct Particle {
     velocity: vec2<f32>;
 };
 
-[[block]] struct ParticlesBuffer {
+struct ParticlesBuffer {
     particles: array<Particle>;
 };
 
-[[block]] struct ColorsBuffer {
+struct ColorsBuffer {
     color: array<u32>;
 };
 

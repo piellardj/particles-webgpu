@@ -1,4 +1,4 @@
-[[block]] struct Uniforms {   //             align(16)  size(24)
+struct Uniforms {             //             align(16)  size(24)
     color: vec4<f32>;         // offset(0)   align(16)  size(16)
     spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)
 };

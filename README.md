@@ -30,7 +30,7 @@ I encountered a unexpected behaviour in a shader with a `struct` I used to descr
 #### Issue
 Here is how I described it in the shader (wgsl):
 ```glsl
-[[block]] struct Uniforms {
+struct Uniforms {
     singleFloat: f32;
     vecFloat: vec2<f32>;
 };
@@ -91,14 +91,14 @@ This issue came from alignment of types in WGSL. This behaviour is described in 
 
 Each type has their own alignment requirements. In this case, the relevant info is: `AlignOf(f32) == 4` and `AlignOf(vec2<f32>) == 8`. This means that when I write:
 ```glsl
-[[block]] struct Uniforms {
+struct Uniforms {
     singleFloat: f32;
     vecFloat: vec2<f32>;
 };
 ```
 because of the 8-bytes alignment of `vec2<f32>`, it is actually translated as:
 ```glsl
-[[block]] struct Uniforms {
+struct Uniforms {
     singleFloat: f32;
     unusablePaddingFloat: f32;
     vecFloat: vec2<f32>;
@@ -110,7 +110,7 @@ This explains why
 
 Since `f32` are 4-bytes aligned and I don't care about the alignment/stride of the `struct` itself, the fix I used is surprisingly simple: switch my two properties:
 ```glsl
-[[block]] struct Uniforms {
+struct Uniforms {
     vecFloat: vec2<f32>;
     singleFloat: f32;
 };

@@ -1,18 +1,18 @@
-import { Parameters } from "../parameters";
+import { WebGPUCanvas } from "../webgpu-utils/webgpu-canvas";
 import * as WebGPU from "../webgpu-utils/webgpu-device";
+import { IRenderer, RenderableParticlesBatch } from "./i-renderer";
 
 type Pipeline = {
     renderPipeline: GPURenderPipeline;
     uniformsBindgroup: GPUBindGroup;
 }
 
-type RenderableParticlesBatch = {
-    gpuBuffer: GPUBuffer;
-    colorsBuffer: GPUBuffer;
-    particlesCount: number;
-}
+abstract class Renderer implements IRenderer {
+    public particleColor: [number, number, number] = [0, 0, 0];
+    public particleOpacity: number = 1;
+    public enableAdditiveBlending: boolean = true;
+    public spriteSize: number = 2;
 
-abstract class Renderer {
     private readonly uniformsBuffer: GPUBuffer;
 
     private pipelineAdditiveBlending: Pipeline;
@@ -25,7 +25,13 @@ abstract class Renderer {
         });
     }
 
-    public abstract draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void;
+    public draw(commandEncoder: GPUCommandEncoder, webgpuCanvas: WebGPUCanvas, particleBatches: RenderableParticlesBatch[]): void {
+        const renderPassEncoder = webgpuCanvas.beginRenderPass(commandEncoder);
+        this.drawInternal(renderPassEncoder, webgpuCanvas.width, webgpuCanvas.height, particleBatches);
+        renderPassEncoder.end();
+    }
+
+    public abstract drawInternal(renderPassEncoder: GPURenderPassEncoder, canvasWidth: number, canvasHeight: number, particleBatches: RenderableParticlesBatch[]): void;
 
     protected createRenderPipelines(descriptor: GPURenderPipelineDescriptor): void {
         descriptor.fragment.targets = [{
@@ -52,13 +58,12 @@ abstract class Renderer {
     }
 
     protected updateUniformsBuffer(canvasWidth: number, canvasHeight: number): void {
-        const color = Parameters.particleColor;
-        const uniformsData = [color[0], color[1], color[2], Parameters.opacity, Parameters.spriteSize / canvasWidth, Parameters.spriteSize / canvasHeight];
+        const uniformsData = [this.particleColor[0], this.particleColor[1], this.particleColor[2], this.particleOpacity, this.spriteSize / canvasWidth, this.spriteSize / canvasHeight];
         WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array(uniformsData).buffer);
     }
 
     protected get pipeline(): Pipeline {
-        if (Parameters.blending) {
+        if (this.enableAdditiveBlending) {
             return this.pipelineAdditiveBlending;
         } else {
             return this.pipelineNoBlending;

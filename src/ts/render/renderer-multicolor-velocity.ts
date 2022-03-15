@@ -51,14 +51,15 @@ class RendererMulticolorVelocity extends Renderer {
         });
     }
 
-    public override draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder, particlesBatch: RenderableParticlesBatch): void {
+    public override drawInternal(renderPassEncoder: GPURenderPassEncoder, canvasWidth: number, canvasHeight: number, particleBatches: RenderableParticlesBatch[]): void {
         super.updateUniformsBuffer(canvasWidth, canvasHeight);
 
-        const pipeline = this.pipeline;
-        renderPassEncoder.setPipeline(pipeline.renderPipeline);
-        renderPassEncoder.setBindGroup(0, pipeline.uniformsBindgroup);
-        renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
-        renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+        renderPassEncoder.setPipeline(this.pipeline.renderPipeline);
+        renderPassEncoder.setBindGroup(0, this.pipeline.uniformsBindgroup);
+        for (const particlesBatch of particleBatches) {
+            renderPassEncoder.setVertexBuffer(0, particlesBatch.gpuBuffer);
+            renderPassEncoder.draw(particlesBatch.particlesCount, 1, 0, 0);
+        }
     }
 }
 

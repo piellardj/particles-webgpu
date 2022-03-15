@@ -45,12 +45,7 @@ async function main(): Promise<void> {
 
         Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
-
-        const renderPassEncoder = commandEncoder.beginRenderPass(webgpuCanvas.getRenderPassDescriptor());
-        webgpuCanvas.setFullcanvasViewport(renderPassEncoder);
-        webgpuCanvas.setFullcanvasScissor(renderPassEncoder);
-        engine.draw(webgpuCanvas.width, webgpuCanvas.height, renderPassEncoder);
-        renderPassEncoder.end();
+        engine.draw(commandEncoder, webgpuCanvas);
 
         device.queue.submit([commandEncoder.finish()]);
 

@@ -7,13 +7,14 @@ import ColorShaderPartSource from "../shaders/utils/color.part.wgsl";
 import * as Attractors from "./attractors";
 import { bytesToString } from "./helpers";
 import { ColorMode, ColorSource, Parameters } from "./parameters";
-import { Renderer } from "./render/renderer";
+import { IRenderer } from "./render/i-renderer";
 import { RendererInstancedMonocolor } from "./render/renderer-instanced-monocolor";
 import { RendererInstancedMulticolor } from "./render/renderer-instanced-multicolor";
 import { RendererInstancedMulticolorVelocity } from "./render/renderer-instanced-multicolor-velocity";
 import { RendererMonocolor } from "./render/renderer-monocolor";
 import { RendererMulticolor } from "./render/renderer-multicolor";
 import { RendererMulticolorVelocity } from "./render/renderer-multicolor-velocity";
+import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 
 const MAX_ATTRACTORS = 4;
@@ -106,8 +107,8 @@ class Engine {
         }
     }
 
-    public draw(canvasWidth: number, canvasHeight: number, renderPassEncoder: GPURenderPassEncoder): void {
-        let renderer: Renderer;
+    public draw(commandEncoder: GPUCommandEncoder, webgpuCanvas: WebGPUCanvas): void {
+        let renderer: IRenderer;
         const instanced = (Parameters.spriteSize > 1);
         if (Parameters.colorMode === ColorMode.UNICOLOR) {
             if (instanced) {
@@ -129,9 +130,11 @@ class Engine {
             }
         }
 
-        for (const particlesBatch of this.particleBatches) {
-            renderer.draw(canvasWidth, canvasHeight, renderPassEncoder, particlesBatch);
-        }
+        renderer.particleColor = Parameters.particleColor;
+        renderer.particleOpacity = Parameters.opacity;
+        renderer.enableAdditiveBlending = Parameters.blending;
+        renderer.spriteSize = Parameters.spriteSize;
+        renderer.draw(commandEncoder, webgpuCanvas, this.particleBatches);
     }
 
     public reset(wantedParticlesCount: number): void {

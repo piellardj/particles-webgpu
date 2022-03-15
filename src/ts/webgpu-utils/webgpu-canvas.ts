@@ -49,7 +49,15 @@ class WebGPUCanvas {
         }
     }
 
-    public getRenderPassDescriptor(): GPURenderPassDescriptor {
+    public beginRenderPass(commandEncoder: GPUCommandEncoder): GPURenderPassEncoder {
+        const renderPassDescriptor = this.getRenderPassDescriptor();
+        const renderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+        renderPassEncoder.setViewport(0, 0, this.width, this.height, 0, 1);
+        renderPassEncoder.setScissorRect(0, 0, this.width, this.height);
+        return renderPassEncoder;
+    }
+
+    private getRenderPassDescriptor(): GPURenderPassDescriptor {
         const colorAttachment: GPURenderPassColorAttachment = {
             view: this.context.getCurrentTexture().createView(),
             loadOp: 'clear',
@@ -62,14 +70,6 @@ class WebGPUCanvas {
         };
 
         return renderPassDesc;
-    }
-
-    public setFullcanvasViewport(renderPassEncoder: GPURenderPassEncoder): void {
-        renderPassEncoder.setViewport(0, 0, this.width, this.height, 0, 1);
-    }
-
-    public setFullcanvasScissor(renderPassEncoder: GPURenderPassEncoder): void {
-        renderPassEncoder.setScissorRect(0, 0, this.width, this.height);
     }
 }
 

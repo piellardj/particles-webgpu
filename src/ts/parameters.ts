@@ -18,6 +18,7 @@ const controlId = {
 
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
+    COLOR_HIGH_QUALITY_CHECKBOX_ID: "high-color-quality-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
     COLOR_SOURCE_TABS_ID: "color-source-tabs-id",
     IMAGE_SELECT_ID: "image-preset-select-id",
@@ -91,6 +92,9 @@ abstract class Parameters {
     }
     public static get autoColor(): boolean {
         return Page.Checkbox.isChecked(controlId.COLOR_AUTO_CHECKBOX_ID);
+    }
+    public static get highColorQuality(): boolean {
+        return Page.Checkbox.isChecked(controlId.COLOR_HIGH_QUALITY_CHECKBOX_ID);
     }
     public static get particleColor(): [number, number, number] {
         if (Parameters.autoColor) {
@@ -172,6 +176,7 @@ function updateColorsVisibility(): void {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
     const imageColorSource = (Parameters.colorSource === ColorSource.IMAGE);
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
+    Page.Controls.setVisibility(controlId.COLOR_HIGH_QUALITY_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
     Page.Controls.setVisibility(controlId.COLOR_SOURCE_TABS_ID, !isUnicolor);
     Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor && imageColorSource);

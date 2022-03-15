@@ -9,9 +9,11 @@ import { bytesToString } from "./helpers";
 import { ColorMode, ColorSource, Parameters } from "./parameters";
 import { IRenderer } from "./render/i-renderer";
 import { RendererInstancedMonocolor } from "./render/renderer-instanced-monocolor";
+import { RendererInstancedMonocolorHighQuality } from "./render/renderer-instanced-monocolor-high-quality";
 import { RendererInstancedMulticolor } from "./render/renderer-instanced-multicolor";
 import { RendererInstancedMulticolorVelocity } from "./render/renderer-instanced-multicolor-velocity";
 import { RendererMonocolor } from "./render/renderer-monocolor";
+import { RendererMonocolorHighQuality } from "./render/renderer-monocolor-high-quality";
 import { RendererMulticolor } from "./render/renderer-multicolor";
 import { RendererMulticolorVelocity } from "./render/renderer-multicolor-velocity";
 import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
@@ -39,17 +41,21 @@ class Engine {
     private readonly initializeColorsComputePipeline: GPUComputePipeline;
 
     private readonly rendererMonocolor: RendererMonocolor;
+    private readonly rendererMonocolorHighQuality: RendererMonocolorHighQuality;
     private readonly rendererMulticolor: RendererMulticolor;
     private readonly rendererMulticolorVelocity: RendererMulticolorVelocity;
     private readonly rendererInstancedMonocolor: RendererInstancedMonocolor;
+    private readonly rendererInstancedMonocolorHighQuality: RendererInstancedMonocolorHighQuality;
     private readonly rendererInstancedMulticolor: RendererInstancedMulticolor;
     private readonly rendererInstancedMulticolorVelocity: RendererInstancedMulticolorVelocity;
 
     public constructor(targetTextureFormat: GPUTextureFormat) {
         this.rendererMonocolor = new RendererMonocolor(targetTextureFormat);
+        this.rendererMonocolorHighQuality = new RendererMonocolorHighQuality(targetTextureFormat);
         this.rendererMulticolor = new RendererMulticolor(targetTextureFormat);
         this.rendererMulticolorVelocity = new RendererMulticolorVelocity(targetTextureFormat);
         this.rendererInstancedMonocolor = new RendererInstancedMonocolor(targetTextureFormat);
+        this.rendererInstancedMonocolorHighQuality = new RendererInstancedMonocolorHighQuality(targetTextureFormat);
         this.rendererInstancedMulticolor = new RendererInstancedMulticolor(targetTextureFormat);
         this.rendererInstancedMulticolorVelocity = new RendererInstancedMulticolorVelocity(targetTextureFormat);
 
@@ -111,10 +117,18 @@ class Engine {
         let renderer: IRenderer;
         const instanced = (Parameters.spriteSize > 1);
         if (Parameters.colorMode === ColorMode.UNICOLOR) {
-            if (instanced) {
-                renderer = this.rendererInstancedMonocolor;
+            if (Parameters.highColorQuality) {
+                if (instanced) {
+                    renderer = this.rendererInstancedMonocolorHighQuality;
+                } else {
+                    renderer = this.rendererMonocolorHighQuality;
+                }
             } else {
-                renderer = this.rendererMonocolor;
+                if (instanced) {
+                    renderer = this.rendererInstancedMonocolor;
+                } else {
+                    renderer = this.rendererMonocolor;
+                }
             }
         } else if (Parameters.colorSource === ColorSource.IMAGE) {
             if (instanced) {

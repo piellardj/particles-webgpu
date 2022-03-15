@@ -162,9 +162,11 @@ const Attractors = __importStar(__webpack_require__(/*! ./attractors */ "./src/t
 const helpers_1 = __webpack_require__(/*! ./helpers */ "./src/ts/helpers.ts");
 const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 const renderer_instanced_monocolor_1 = __webpack_require__(/*! ./render/renderer-instanced-monocolor */ "./src/ts/render/renderer-instanced-monocolor.ts");
+const renderer_instanced_monocolor_high_quality_1 = __webpack_require__(/*! ./render/renderer-instanced-monocolor-high-quality */ "./src/ts/render/renderer-instanced-monocolor-high-quality.ts");
 const renderer_instanced_multicolor_1 = __webpack_require__(/*! ./render/renderer-instanced-multicolor */ "./src/ts/render/renderer-instanced-multicolor.ts");
 const renderer_instanced_multicolor_velocity_1 = __webpack_require__(/*! ./render/renderer-instanced-multicolor-velocity */ "./src/ts/render/renderer-instanced-multicolor-velocity.ts");
 const renderer_monocolor_1 = __webpack_require__(/*! ./render/renderer-monocolor */ "./src/ts/render/renderer-monocolor.ts");
+const renderer_monocolor_high_quality_1 = __webpack_require__(/*! ./render/renderer-monocolor-high-quality */ "./src/ts/render/renderer-monocolor-high-quality.ts");
 const renderer_multicolor_1 = __webpack_require__(/*! ./render/renderer-multicolor */ "./src/ts/render/renderer-multicolor.ts");
 const renderer_multicolor_velocity_1 = __webpack_require__(/*! ./render/renderer-multicolor-velocity */ "./src/ts/render/renderer-multicolor-velocity.ts");
 const WebGPU = __importStar(__webpack_require__(/*! ./webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
@@ -173,9 +175,11 @@ class Engine {
     constructor(targetTextureFormat) {
         this.particleBatches = [];
         this.rendererMonocolor = new renderer_monocolor_1.RendererMonocolor(targetTextureFormat);
+        this.rendererMonocolorHighQuality = new renderer_monocolor_high_quality_1.RendererMonocolorHighQuality(targetTextureFormat);
         this.rendererMulticolor = new renderer_multicolor_1.RendererMulticolor(targetTextureFormat);
         this.rendererMulticolorVelocity = new renderer_multicolor_velocity_1.RendererMulticolorVelocity(targetTextureFormat);
         this.rendererInstancedMonocolor = new renderer_instanced_monocolor_1.RendererInstancedMonocolor(targetTextureFormat);
+        this.rendererInstancedMonocolorHighQuality = new renderer_instanced_monocolor_high_quality_1.RendererInstancedMonocolorHighQuality(targetTextureFormat);
         this.rendererInstancedMulticolor = new renderer_instanced_multicolor_1.RendererInstancedMulticolor(targetTextureFormat);
         this.rendererInstancedMulticolorVelocity = new renderer_instanced_multicolor_velocity_1.RendererInstancedMulticolorVelocity(targetTextureFormat);
         this.computePipeline = WebGPU.device.createComputePipeline({
@@ -229,11 +233,21 @@ class Engine {
         let renderer;
         const instanced = (parameters_1.Parameters.spriteSize > 1);
         if (parameters_1.Parameters.colorMode === parameters_1.ColorMode.UNICOLOR) {
-            if (instanced) {
-                renderer = this.rendererInstancedMonocolor;
+            if (parameters_1.Parameters.highColorQuality) {
+                if (instanced) {
+                    renderer = this.rendererInstancedMonocolorHighQuality;
+                }
+                else {
+                    renderer = this.rendererMonocolorHighQuality;
+                }
             }
             else {
-                renderer = this.rendererMonocolor;
+                if (instanced) {
+                    renderer = this.rendererInstancedMonocolor;
+                }
+                else {
+                    renderer = this.rendererMonocolor;
+                }
             }
         }
         else if (parameters_1.Parameters.colorSource === parameters_1.ColorSource.IMAGE) {
@@ -610,6 +624,7 @@ const controlId = {
     ATTRACTORS_DISPLAY_CHECKBOX_ID: "display-attractors-checkbox-id",
     COLOR_MODE_TABS_ID: "colors-mode-tabs-id",
     COLOR_AUTO_CHECKBOX_ID: "auto-color-checkbox-id",
+    COLOR_HIGH_QUALITY_CHECKBOX_ID: "high-color-quality-checkbox-id",
     PARTICLE_COLORPICKER_ID: "particle-color-id",
     COLOR_SOURCE_TABS_ID: "color-source-tabs-id",
     IMAGE_SELECT_ID: "image-preset-select-id",
@@ -676,6 +691,9 @@ class Parameters {
     }
     static get autoColor() {
         return Page.Checkbox.isChecked(controlId.COLOR_AUTO_CHECKBOX_ID);
+    }
+    static get highColorQuality() {
+        return Page.Checkbox.isChecked(controlId.COLOR_HIGH_QUALITY_CHECKBOX_ID);
     }
     static get particleColor() {
         if (Parameters.autoColor) {
@@ -764,6 +782,7 @@ function updateColorsVisibility() {
     const isUnicolor = (Parameters.colorMode === ColorMode.UNICOLOR);
     const imageColorSource = (Parameters.colorSource === ColorSource.IMAGE);
     Page.Controls.setVisibility(controlId.COLOR_AUTO_CHECKBOX_ID, isUnicolor);
+    Page.Controls.setVisibility(controlId.COLOR_HIGH_QUALITY_CHECKBOX_ID, isUnicolor);
     Page.Controls.setVisibility(controlId.PARTICLE_COLORPICKER_ID, isUnicolor && !Parameters.autoColor);
     Page.Controls.setVisibility(controlId.COLOR_SOURCE_TABS_ID, !isUnicolor);
     Page.Controls.setVisibility(controlId.IMAGE_SELECT_ID, !isUnicolor && imageColorSource);
@@ -798,6 +817,209 @@ Page.Checkbox.addObserver(controlId.BLENDING_CHECKBOX_ID, (hasBlending) => {
     Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, hasBlending);
 });
 Page.Controls.setVisibility(controlId.OPACITY_RANGE_ID, Page.Checkbox.isChecked(controlId.BLENDING_CHECKBOX_ID));
+
+
+/***/ }),
+
+/***/ "./src/ts/render/composition.ts":
+/*!**************************************!*\
+  !*** ./src/ts/render/composition.ts ***!
+  \**************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Composition = void 0;
+const composition_wgsl_1 = __importDefault(__webpack_require__(/*! ../../shaders/composition.wgsl */ "./src/shaders/composition.wgsl"));
+const parameters_1 = __webpack_require__(/*! ../parameters */ "./src/ts/parameters.ts");
+const WebGPU = __importStar(__webpack_require__(/*! ../webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
+class Composition {
+    constructor(targetTextureFormat) {
+        this.textureWidth = -1;
+        this.textureHeight = -1;
+        this.textureFormat = "r8unorm";
+        const shaderModule = WebGPU.device.createShaderModule({ code: composition_wgsl_1.default });
+        this.pipeline = WebGPU.device.createRenderPipeline({
+            vertex: {
+                module: shaderModule,
+                entryPoint: "main_vertex",
+                buffers: []
+            },
+            fragment: {
+                module: shaderModule,
+                entryPoint: "main_fragment",
+                targets: [{
+                        format: targetTextureFormat,
+                    }],
+            },
+            primitive: {
+                cullMode: "none",
+                topology: "triangle-strip",
+            },
+        });
+        this.uniformsBuffer = WebGPU.device.createBuffer({
+            size: 20,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
+        this.textureSampler = WebGPU.device.createSampler({
+            addressModeU: "clamp-to-edge",
+            addressModeV: "clamp-to-edge",
+            magFilter: "linear",
+            minFilter: "linear",
+        });
+    }
+    getRenderToTexturePassEncoder(commandEncoder, webgpuCanvas) {
+        this.resizeTextureIfNeeded(webgpuCanvas.width, webgpuCanvas.height);
+        return commandEncoder.beginRenderPass(this.renderToTexturePassDescriptor);
+    }
+    apply(commandEncoder, webgpuCanvas) {
+        const color = parameters_1.Parameters.particleColor;
+        const uniformsData = new ArrayBuffer(20);
+        new Float32Array(uniformsData, 0, 4).set([color[0], color[1], color[2], parameters_1.Parameters.opacity]);
+        new Uint32Array(uniformsData, 16, 1).set([parameters_1.Parameters.blending ? 1 : 0]);
+        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsData);
+        const renderPassEncoder = webgpuCanvas.beginRenderPass(commandEncoder);
+        renderPassEncoder.setPipeline(this.pipeline);
+        renderPassEncoder.setBindGroup(0, this.bindgroup);
+        renderPassEncoder.draw(4, 1, 0, 0);
+        renderPassEncoder.end();
+    }
+    resizeTextureIfNeeded(wantedWidth, wantedHeight) {
+        if (this.textureWidth !== wantedWidth || this.textureHeight !== wantedHeight) {
+            if (this.texture) {
+                this.texture.destroy();
+            }
+            this.texture = WebGPU.device.createTexture({
+                size: [wantedWidth, wantedHeight],
+                format: this.textureFormat,
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+            });
+            this.textureWidth = wantedWidth;
+            this.textureHeight = wantedHeight;
+            this.bindgroup = WebGPU.device.createBindGroup({
+                layout: this.pipeline.getBindGroupLayout(0),
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: this.uniformsBuffer,
+                        }
+                    },
+                    {
+                        binding: 1,
+                        resource: this.texture.createView()
+                    },
+                    {
+                        binding: 2,
+                        resource: this.textureSampler
+                    }
+                ]
+            });
+            this.renderToTexturePassDescriptor = {
+                colorAttachments: [{
+                        view: this.texture.createView(),
+                        loadOp: 'clear',
+                        clearValue: { r: 0, g: 0, b: 0, a: 0 },
+                        storeOp: 'store'
+                    }],
+            };
+        }
+    }
+}
+exports.Composition = Composition;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-high-quality.ts":
+/*!************************************************!*\
+  !*** ./src/ts/render/renderer-high-quality.ts ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererHighQuality = void 0;
+const composition_1 = __webpack_require__(/*! ./composition */ "./src/ts/render/composition.ts");
+// Rather than accumulating directly particles color,
+// this renderer uses deferred rendering to:
+// - first count the particles count per pixel (render to texture with additive blending)
+// - then compute the final color during compositing.
+class RendererHighQuality {
+    constructor(targetTextureFormat) {
+        this.particleColor = [0, 0, 0];
+        this.particleOpacity = 1;
+        this.enableAdditiveBlending = true;
+        this.spriteSize = 2;
+        this.composition = new composition_1.Composition(targetTextureFormat);
+    }
+    draw(commandEncoder, webgpuCanvas, particlesBatches) {
+        this.renderToTexture(commandEncoder, webgpuCanvas, particlesBatches);
+        this.applyComposition(commandEncoder, webgpuCanvas);
+    }
+    renderToTexture(commandEncoder, webgpuCanvas, particlesBatches) {
+        this.renderer.particleColor = [1 / 255, 0, 0];
+        this.renderer.particleOpacity = 1;
+        this.renderer.enableAdditiveBlending = true;
+        this.renderer.spriteSize = this.spriteSize;
+        const textureRenderPassEncoder = this.composition.getRenderToTexturePassEncoder(commandEncoder, webgpuCanvas);
+        this.renderer.drawInternal(textureRenderPassEncoder, webgpuCanvas.width, webgpuCanvas.height, particlesBatches);
+        textureRenderPassEncoder.end();
+    }
+    applyComposition(commandEncoder, webgpuCanvas) {
+        this.composition.apply(commandEncoder, webgpuCanvas);
+    }
+}
+exports.RendererHighQuality = RendererHighQuality;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-instanced-monocolor-high-quality.ts":
+/*!********************************************************************!*\
+  !*** ./src/ts/render/renderer-instanced-monocolor-high-quality.ts ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+/// <reference types="../webgpu-utils/wgsl-type" />
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererInstancedMonocolorHighQuality = void 0;
+const renderer_high_quality_1 = __webpack_require__(/*! ./renderer-high-quality */ "./src/ts/render/renderer-high-quality.ts");
+const renderer_instanced_monocolor_1 = __webpack_require__(/*! ./renderer-instanced-monocolor */ "./src/ts/render/renderer-instanced-monocolor.ts");
+class RendererInstancedMonocolorHighQuality extends renderer_high_quality_1.RendererHighQuality {
+    constructor(targetTextureFormat) {
+        super(targetTextureFormat);
+        this.renderer = new renderer_instanced_monocolor_1.RendererInstancedMonocolor(this.composition.textureFormat);
+    }
+}
+exports.RendererInstancedMonocolorHighQuality = RendererInstancedMonocolorHighQuality;
 
 
 /***/ }),
@@ -1169,6 +1391,29 @@ class RendererInstanced extends renderer_1.Renderer {
     }
 }
 exports.RendererInstanced = RendererInstanced;
+
+
+/***/ }),
+
+/***/ "./src/ts/render/renderer-monocolor-high-quality.ts":
+/*!**********************************************************!*\
+  !*** ./src/ts/render/renderer-monocolor-high-quality.ts ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+/// <reference types="../webgpu-utils/wgsl-type" />
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RendererMonocolorHighQuality = void 0;
+const renderer_high_quality_1 = __webpack_require__(/*! ./renderer-high-quality */ "./src/ts/render/renderer-high-quality.ts");
+const renderer_monocolor_1 = __webpack_require__(/*! ./renderer-monocolor */ "./src/ts/render/renderer-monocolor.ts");
+class RendererMonocolorHighQuality extends renderer_high_quality_1.RendererHighQuality {
+    constructor(targetTextureFormat) {
+        super(targetTextureFormat);
+        this.renderer = new renderer_monocolor_1.RendererMonocolor(this.composition.textureFormat);
+    }
+}
+exports.RendererMonocolorHighQuality = RendererMonocolorHighQuality;
 
 
 /***/ }),
@@ -1711,6 +1956,16 @@ module.exports = __webpack_require__.p + "..\\rc\\images\\b7a8198c185b8b92aebb.p
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 module.exports = __webpack_require__.p + "..\\rc\\images\\a17685859ad122820967.png";
+
+/***/ }),
+
+/***/ "./src/shaders/composition.wgsl":
+/*!**************************************!*\
+  !*** ./src/shaders/composition.wgsl ***!
+  \**************************************/
+/***/ ((module) => {
+
+module.exports = "struct Uniforms {             //             align(32)  size(20)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    additiveBlending: u32;    // offset(16)  align(4)   size(4)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n@group(0) @binding(1) var accumulationTexture: texture_2d<f32>;\r\n@group(0) @binding(2) var accumulationTextureSampler: sampler;\r\n\r\nstruct VertexOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) uv: vec2<f32>;\r\n}\r\n\r\n@stage(vertex)\r\nfn main_vertex(@builtin(vertex_index) inVertexIndex: u32) -> VertexOut {\r\n    var out: VertexOut;\r\n    if (inVertexIndex == 0u) {\r\n        out.uv = vec2<f32>(0.0, 0.0);\r\n    } else if (inVertexIndex == 1u) {\r\n        out.uv = vec2<f32>(0.0, 1.0);\r\n    } else if (inVertexIndex == 2u) {\r\n        out.uv = vec2<f32>(1.0, 0.0);\r\n    } else {\r\n        out.uv = vec2<f32>(1.0, 1.0);\r\n    }\r\n\r\n    out.position = vec4<f32>(2.0 * out.uv.x - 1.0, 1.0 - 2.0 * out.uv.y, 0.0, 1.0);\r\n    return out;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {\r\n    let cumulated = textureSample(accumulationTexture, accumulationTextureSampler, uv).r;\r\n\r\n    if (uniforms.additiveBlending == 1u) {\r\n        return vec4<f32>(255.0 * cumulated * uniforms.color.a * uniforms.color.rgb, 1.0);\r\n    } else {\r\n        return step(0.001, cumulated) * vec4<f32>(uniforms.color.rgb, 1.0);\r\n    }\r\n}\r\n";
 
 /***/ }),
 

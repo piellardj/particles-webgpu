@@ -158,6 +158,12 @@ const data = {
                     checked: true
                 },
                 {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "High quality",
+                    id: "high-color-quality-checkbox-id",
+                    checked: false
+                },
+                {
                     type: Demopage.supportedControls.ColorPicker,
                     title: "Particle color",
                     id: "particle-color-id",

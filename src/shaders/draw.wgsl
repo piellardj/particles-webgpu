@@ -11,5 +11,5 @@ struct Uniforms {             //             align(16)  size(16)
 
 @stage(fragment)
 fn main_fragment() -> @location(0) vec4<f32> {
-    return vec4<f32>(uniforms.color);
+    return uniforms.color;
 }

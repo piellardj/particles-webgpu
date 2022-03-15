@@ -26,5 +26,5 @@ fn main_fragment(@location(0) localPosition: vec2<f32>) -> @location(0) vec4<f32
         discard;
     }
 
-    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);
+    return uniforms.color;
 }

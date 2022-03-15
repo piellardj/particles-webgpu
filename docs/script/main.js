@@ -1728,7 +1728,7 @@ module.exports = "struct Uniforms {             //             align(16)  size(2
   \*****************************************/
 /***/ ((module) => {
 
-module.exports = "struct Uniforms {             //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) localPosition: vec2<f32>) -> @location(0) vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return vec4<f32>(uniforms.color.rgb, uniforms.color.a);\r\n}\r\n";
+module.exports = "struct Uniforms {             //             align(16)  size(24)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n    spriteSize: vec2<f32>;    // offset(16)   align(8)  size(8)\r\n};\r\n\r\nstruct VSOut {\r\n    @builtin(position) position: vec4<f32>;\r\n    @location(0) localPosition: vec2<f32>; // in {-1, +1}^2\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>, @location(1) quadCorner: vec2<f32>) -> VSOut {\r\n    var vsOut: VSOut;\r\n    vsOut.position = vec4<f32>(inPosition + uniforms.spriteSize * quadCorner, 0.0, 1.0);\r\n    vsOut.position.y = -vsOut.position.y;\r\n    vsOut.localPosition = quadCorner;\r\n    return vsOut;\r\n}\r\n\r\n@stage(fragment)\r\nfn main_fragment(@location(0) localPosition: vec2<f32>) -> @location(0) vec4<f32> {\r\n    let distanceFromCenter: f32 = length(localPosition);\r\n    if (distanceFromCenter > 1.0) {\r\n        discard;\r\n    }\r\n\r\n    return uniforms.color;\r\n}\r\n";
 
 /***/ }),
 
@@ -1758,7 +1758,7 @@ module.exports = "struct VSOut {\r\n    @builtin(position) position: vec4<f32>;\
   \*******************************/
 /***/ ((module) => {
 
-module.exports = "@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>) -> @builtin(position) vec4<f32> {\r\n    return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n}\r\n\r\nstruct Uniforms {             //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(fragment)\r\nfn main_fragment() -> @location(0) vec4<f32> {\r\n    return vec4<f32>(uniforms.color);\r\n}\r\n";
+module.exports = "@stage(vertex)\r\nfn main_vertex(@location(0) inPosition: vec2<f32>) -> @builtin(position) vec4<f32> {\r\n    return vec4<f32>(inPosition.x, -inPosition.y, 0.0, 1.0);\r\n}\r\n\r\nstruct Uniforms {             //             align(16)  size(16)\r\n    color: vec4<f32>;         // offset(0)   align(16)  size(16)\r\n};\r\n\r\n@group(0) @binding(0) var<uniform> uniforms: Uniforms;\r\n\r\n@stage(fragment)\r\nfn main_fragment() -> @location(0) vec4<f32> {\r\n    return uniforms.color;\r\n}\r\n";
 
 /***/ }),
 

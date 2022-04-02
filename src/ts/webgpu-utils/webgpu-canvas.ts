@@ -21,6 +21,7 @@ class WebGPUCanvas {
             device: WebGPU.device,
             format: this.context.getPreferredFormat(WebGPU.adapter),
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            compositingAlphaMode: "opaque",
             // no "size" attribute to use the canvas' width and height
         };
         this.context.configure(this.canvasConfiguration);

@@ -1,6 +1,6 @@
 struct Uniforms {             //             align(32)  size(20)
-    color: vec4<f32>;         // offset(0)   align(16)  size(16)
-    additiveBlending: u32;    // offset(16)  align(4)   size(4)
+    color: vec4<f32>,         // offset(0)   align(16)  size(16)
+    additiveBlending: u32,    // offset(16)  align(4)   size(4)
 };
 
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;
@@ -8,8 +8,8 @@ struct Uniforms {             //             align(32)  size(20)
 @group(0) @binding(2) var accumulationTextureSampler: sampler;
 
 struct VertexOut {
-    @builtin(position) position: vec4<f32>;
-    @location(0) uv: vec2<f32>;
+    @builtin(position) position: vec4<f32>,
+    @location(0) uv: vec2<f32>,
 }
 
 @stage(vertex)

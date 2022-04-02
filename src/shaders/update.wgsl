@@ -1,28 +1,28 @@
 struct Particle {
-    position: vec2<f32>;
-    velocity: vec2<f32>;
+    position: vec2<f32>,
+    velocity: vec2<f32>
 };
 
 struct ParticlesBuffer {
-    particles: array<Particle>;
+    particles: array<Particle>,
 };
 
 struct Attractor {                                 //             align(8)  size(16)
-    position: vec2<f32>;                           // offset(0)   align(8)  size(8)
-    force: f32;                                    // offset(8)   align(4)  size(4)
+    position: vec2<f32>,                           // offset(0)   align(8)  size(8)
+    force: f32,                                    // offset(8)   align(4)  size(4)
     // -- implicit padding --                      // offset(12)            size(4)
 };
 
 struct Uniforms {                                  //             align(8)  size(48)
-    force: vec2<f32>;                              // offset(0)   align(8)  size(8)
-    dt: f32;                                       // offset(8)   align(4)  size(4)
-    bounce: u32;                                   // offset(12)  align(4)  size(4)
+    force: vec2<f32>,                              // offset(0)   align(8)  size(8)
+    dt: f32,                                       // offset(8)   align(4)  size(4)
+    bounce: u32,                                   // offset(12)  align(4)  size(4)
 
-    friction: f32;                                 // offset(16)  align(4)  size(4)
-    aspectRatio: f32;                              // offset(20)  align(4)  size(4)
-    attractorsCount: u32;                          // offset(24)  align(4)  size(4)
+    friction: f32,                                 // offset(16)  align(4)  size(4)
+    aspectRatio: f32,                              // offset(20)  align(4)  size(4)
+    attractorsCount: u32,                          // offset(24)  align(4)  size(4)
     // -- implicit padding --                      // offset(28)            size(4)
-    @align(16) attractors: array<Attractor, 4>;    // offset(32)  align(16) size(16) stride(16)
+    @align(16) attractors: array<Attractor, 4>,    // offset(32)  align(16) size(16) stride(16)
 };
 
 @group(0) @binding(0) var<storage,read_write> particlesStorage: ParticlesBuffer;

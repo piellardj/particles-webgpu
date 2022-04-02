@@ -1,14 +1,14 @@
 struct Particle {
-    position: vec2<f32>;
-    velocity: vec2<f32>;
+    position: vec2<f32>,
+    velocity: vec2<f32>,
 };
 
 struct ParticlesBuffer {
-    particles: array<Particle>;
+    particles: array<Particle>,
 };
 
 struct ColorsBuffer {
-    color: array<u32>;
+    color: array<u32>,
 };
 
 @group(0) @binding(0) var<storage,read> particlesStorage: ParticlesBuffer;

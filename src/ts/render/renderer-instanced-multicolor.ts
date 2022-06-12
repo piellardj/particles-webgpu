@@ -66,6 +66,7 @@ class RendererInstancedMulticolor extends RendererInstanced {
                 cullMode: "none",
                 topology: "triangle-list",
             },
+            layout: "auto"
         });
     }
 

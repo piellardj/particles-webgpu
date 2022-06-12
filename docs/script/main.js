@@ -186,7 +186,8 @@ class Engine {
             compute: {
                 module: WebGPU.device.createShaderModule({ code: update_wgsl_1.default }),
                 entryPoint: "main"
-            }
+            },
+            layout: "auto"
         });
         this.computeUniformsBuffer = WebGPU.device.createBuffer({
             size: 96,
@@ -195,8 +196,9 @@ class Engine {
         this.initializeColorsComputePipeline = WebGPU.device.createComputePipeline({
             compute: {
                 module: WebGPU.device.createShaderModule({ code: color_part_wgsl_1.default + initialize_colors_wgsl_1.default }),
-                entryPoint: "main"
-            }
+                entryPoint: "main",
+            },
+            layout: "auto"
         });
     }
     get particlesCount() {
@@ -882,6 +884,7 @@ class Composition {
                 cullMode: "none",
                 topology: "triangle-strip",
             },
+            layout: "auto"
         });
         this.uniformsBuffer = WebGPU.device.createBuffer({
             size: 20,
@@ -1105,6 +1108,7 @@ class RendererInstancedMonocolor extends renderer_instanced_1.RendererInstanced 
                 cullMode: "none",
                 topology: "triangle-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {
@@ -1210,6 +1214,7 @@ class RendererInstancedMulticolorVelocity extends renderer_instanced_1.RendererI
                 cullMode: "none",
                 topology: "triangle-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {
@@ -1321,6 +1326,7 @@ class RendererInstancedMulticolor extends renderer_instanced_1.RendererInstanced
                 cullMode: "none",
                 topology: "triangle-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {
@@ -1488,6 +1494,7 @@ class RendererMonocolor extends renderer_1.Renderer {
                 cullMode: "none",
                 topology: "point-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {
@@ -1581,6 +1588,7 @@ class RendererMulticolorVelocity extends renderer_1.Renderer {
                 cullMode: "none",
                 topology: "point-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {
@@ -1680,6 +1688,7 @@ class RendererMulticolor extends renderer_1.Renderer {
                 cullMode: "none",
                 topology: "point-list",
             },
+            layout: "auto"
         });
     }
     drawInternal(renderPassEncoder, canvasWidth, canvasHeight, particleBatches) {

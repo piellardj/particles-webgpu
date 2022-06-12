@@ -42,6 +42,7 @@ class RendererMonocolor extends Renderer {
                 cullMode: "none",
                 topology: "point-list",
             },
+            layout: "auto"
         });
     }
 

@@ -63,7 +63,8 @@ class Engine {
             compute: {
                 module: WebGPU.device.createShaderModule({ code: UpdateShaderSource }),
                 entryPoint: "main"
-            }
+            },
+            layout: "auto"
         });
 
         this.computeUniformsBuffer = WebGPU.device.createBuffer({
@@ -74,8 +75,9 @@ class Engine {
         this.initializeColorsComputePipeline = WebGPU.device.createComputePipeline({
             compute: {
                 module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + InitializeColorsShaderSource }),
-                entryPoint: "main"
-            }
+                entryPoint: "main",
+            },
+            layout: "auto"
         });
     }
 

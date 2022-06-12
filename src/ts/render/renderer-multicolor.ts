@@ -55,6 +55,7 @@ class RendererMulticolor extends Renderer {
                 cullMode: "none",
                 topology: "point-list",
             },
+            layout: "auto"
         });
     }
 

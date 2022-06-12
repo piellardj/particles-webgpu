@@ -53,6 +53,7 @@ class RendererInstancedMonocolor extends RendererInstanced {
                 cullMode: "none",
                 topology: "triangle-list",
             },
+            layout: "auto"
         });
     }
 

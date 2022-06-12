@@ -36,6 +36,7 @@ class Composition {
                 cullMode: "none",
                 topology: "triangle-strip",
             },
+            layout: "auto"
         });
         
         this.uniformsBuffer = WebGPU.device.createBuffer({

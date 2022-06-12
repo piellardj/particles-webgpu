@@ -225,7 +225,7 @@ class Engine {
             const computePass = commandEncoder.beginComputePass();
             computePass.setPipeline(this.computePipeline);
             computePass.setBindGroup(0, particlesBatch.computeBindgroup);
-            computePass.dispatch(particlesBatch.dispatchSize);
+            computePass.dispatchWorkgroups(particlesBatch.dispatchSize);
             computePass.end();
         }
     }
@@ -378,7 +378,7 @@ class Engine {
             computePass.setPipeline(this.initializeColorsComputePipeline);
             computePass.setBindGroup(0, particlesBatch.initializeColorsComputeBindgroup);
             computePass.setBindGroup(1, textureBindgroup);
-            computePass.dispatch(particlesBatch.dispatchSize);
+            computePass.dispatchWorkgroups(particlesBatch.dispatchSize);
             computePass.end();
         }
     }

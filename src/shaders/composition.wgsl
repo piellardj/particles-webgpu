@@ -12,7 +12,7 @@ struct VertexOut {
     @location(0) uv: vec2<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main_vertex(@builtin(vertex_index) inVertexIndex: u32) -> VertexOut {
     var out: VertexOut;
     if (inVertexIndex == 0u) {
@@ -29,7 +29,7 @@ fn main_vertex(@builtin(vertex_index) inVertexIndex: u32) -> VertexOut {
     return out;
 }
 
-@stage(fragment)
+@fragment
 fn main_fragment(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
     let cumulated = textureSample(accumulationTexture, accumulationTextureSampler, uv).r;
 

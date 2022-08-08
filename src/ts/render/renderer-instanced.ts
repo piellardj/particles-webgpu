@@ -9,7 +9,7 @@ abstract class RendererInstanced extends Renderer {
     public constructor(targetTextureFormat: GPUTextureFormat) {
         super(targetTextureFormat);
 
-        this.quadBuffer = WebGPU.device.createBuffer({
+        this.quadBuffer = WebGPU.device!.createBuffer({
             size: Float32Array.BYTES_PER_ELEMENT * 2 * 6,
             usage: GPUBufferUsage.VERTEX,
             mappedAtCreation: true,

@@ -11,14 +11,17 @@ class WebGPUCanvas {
     public constructor(private readonly canvas: HTMLCanvasElement) {
         this.devicePixelRatio = window.devicePixelRatio;
 
-        const contextName = "webgpu";
-        this.context = canvas.getContext(contextName);
-        if (!this.context) {
-            throw new Error(`Failed to get a '${contextName}' context from canvas.`);
+        {
+            const contextName = "webgpu";
+            const context = canvas.getContext(contextName);
+            if (!context) {
+                throw new Error(`Failed to get a '${contextName}' context from canvas.`);
+            }
+            this.context = context;
         }
 
         this.canvasConfiguration = {
-            device: WebGPU.device,
+            device: WebGPU.device!,
             format: navigator.gpu.getPreferredCanvasFormat(),
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
             alphaMode: "opaque",

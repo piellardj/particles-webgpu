@@ -59,22 +59,22 @@ class Engine {
         this.rendererInstancedMulticolor = new RendererInstancedMulticolor(targetTextureFormat);
         this.rendererInstancedMulticolorVelocity = new RendererInstancedMulticolorVelocity(targetTextureFormat);
 
-        this.computePipeline = WebGPU.device.createComputePipeline({
+        this.computePipeline = WebGPU.device!.createComputePipeline({
             compute: {
-                module: WebGPU.device.createShaderModule({ code: UpdateShaderSource }),
+                module: WebGPU.device!.createShaderModule({ code: UpdateShaderSource }),
                 entryPoint: "main"
             },
             layout: "auto"
         });
 
-        this.computeUniformsBuffer = WebGPU.device.createBuffer({
+        this.computeUniformsBuffer = WebGPU.device!.createBuffer({
             size: 96,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
 
-        this.initializeColorsComputePipeline = WebGPU.device.createComputePipeline({
+        this.initializeColorsComputePipeline = WebGPU.device!.createComputePipeline({
             compute: {
-                module: WebGPU.device.createShaderModule({ code: ColorShaderPartSource + InitializeColorsShaderSource }),
+                module: WebGPU.device!.createShaderModule({ code: ColorShaderPartSource + InitializeColorsShaderSource }),
                 entryPoint: "main",
             },
             layout: "auto"
@@ -104,7 +104,7 @@ class Engine {
 
         const uniformForce: Attractors.Force = [0, 3 * Parameters.gravity];
         const uniformsBufferData = this.buildComputeUniforms(dt, aspectRatio, uniformForce, attractors);
-        WebGPU.device.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
+        WebGPU.device!.queue.writeBuffer(this.computeUniformsBuffer, 0, uniformsBufferData);
 
         for (const particlesBatch of this.particleBatches) {
             const computePass = commandEncoder.beginComputePass();
@@ -167,7 +167,7 @@ class Engine {
         let totalGpuBufferSize = 0, totalColorBufferSize = 0;
 
         const particleSize = Float32Array.BYTES_PER_ELEMENT * (2 + 2);
-        const maxDispatchSize = Math.floor(WebGPU.device.limits.maxStorageBufferBindingSize / particleSize / Engine.WORKGROUP_SIZE);
+        const maxDispatchSize = Math.floor(WebGPU.device!.limits.maxStorageBufferBindingSize / particleSize / Engine.WORKGROUP_SIZE);
 
         let particlesLeftToAllocate = wantedParticlesCount;
         while (particlesLeftToAllocate > 0) {
@@ -178,14 +178,14 @@ class Engine {
             particlesLeftToAllocate -= particlesCount;
 
             const gpuBufferSize = particlesCount * particleSize;
-            const gpuBuffer = WebGPU.device.createBuffer({
+            const gpuBuffer = WebGPU.device!.createBuffer({
                 size: gpuBufferSize,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: true,
             });
             totalGpuBufferSize += gpuBufferSize;
             const colorsBufferSize = particlesCount * Uint32Array.BYTES_PER_ELEMENT;
-            const colorsGpuBuffer = WebGPU.device.createBuffer({
+            const colorsGpuBuffer = WebGPU.device!.createBuffer({
                 size: colorsBufferSize,
                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE,
                 mappedAtCreation: false,
@@ -202,7 +202,7 @@ class Engine {
             }
             gpuBuffer.unmap();
 
-            const computeBindgroup = WebGPU.device.createBindGroup({
+            const computeBindgroup = WebGPU.device!.createBindGroup({
                 layout: this.computePipeline.getBindGroupLayout(0),
                 entries: [
                     {
@@ -220,7 +220,7 @@ class Engine {
                 ]
             });
 
-            const initializeColorsComputeBindgroup = WebGPU.device.createBindGroup({
+            const initializeColorsComputeBindgroup = WebGPU.device!.createBindGroup({
                 layout: this.initializeColorsComputePipeline.getBindGroupLayout(0),
                 entries: [
                     {
@@ -252,7 +252,7 @@ class Engine {
     }
 
     public initializeColors(commandEncoder: GPUCommandEncoder, sampler: GPUSampler, texture: GPUTexture): void {
-        const textureBindgroup = WebGPU.device.createBindGroup({
+        const textureBindgroup = WebGPU.device!.createBindGroup({
             layout: this.initializeColorsComputePipeline.getBindGroupLayout(1),
             entries: [
                 {
@@ -290,7 +290,7 @@ class Engine {
         new Float32Array(buffer, 20, 1).set([aspectRatio]);
         new Uint32Array(buffer, 24, 1).set([attractors.length]);
 
-        const attractorsData = [];
+        const attractorsData: number[] = [];
         for (const attractor of attractors) {
             attractorsData.push(attractor.position[0]);
             attractorsData.push(attractor.position[1]);

@@ -55,7 +55,7 @@ enum ImagePreset {
     LADYBUG = "ladybug"
 }
 
-let customImageFile: File = null;
+let customImageFile: File | null = null;
 
 abstract class Parameters {
     public static readonly resetObservers: VoidObserver[] = [];
@@ -133,11 +133,13 @@ abstract class Parameters {
     public static async inputImageUrl(): Promise<string> {
         if (customImageFile) {
             return new Promise<string>((resolve: (value: string) => void) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result.toString());
-                };
-                reader.readAsDataURL(customImageFile);
+                if (customImageFile) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result!.toString());
+                    };
+                    reader.readAsDataURL(customImageFile);
+                }
             });
         } else {
             const imagePreset = Page.Select.getValue(controlId.IMAGE_SELECT_ID) as ImagePreset;
@@ -201,7 +203,7 @@ Page.Select.addObserver(controlId.IMAGE_SELECT_ID, () => {
 
 Page.FileControl.addUploadObserver(controlId.IMAGE_UPLOAD_BUTTON_ID, (filesList: FileList) => {
     Page.Select.setValue(controlId.IMAGE_SELECT_ID, null);
-    customImageFile = filesList[0];
+    customImageFile = filesList[0] || null;
     callResetObservers();
 });
 

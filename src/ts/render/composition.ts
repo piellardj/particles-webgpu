@@ -17,9 +17,9 @@ class Composition {
     private renderToTexturePassDescriptor: GPURenderPassDescriptor;
 
     public constructor(targetTextureFormat: GPUTextureFormat) {
-        const shaderModule = WebGPU.device.createShaderModule({ code: ShaderSource });
+        const shaderModule = WebGPU.device!.createShaderModule({ code: ShaderSource });
 
-        this.pipeline = WebGPU.device.createRenderPipeline({
+        this.pipeline = WebGPU.device!.createRenderPipeline({
             vertex: {
                 module: shaderModule,
                 entryPoint: "main_vertex",
@@ -39,12 +39,12 @@ class Composition {
             layout: "auto"
         });
         
-        this.uniformsBuffer = WebGPU.device.createBuffer({
+        this.uniformsBuffer = WebGPU.device!.createBuffer({
             size: 20,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
 
-        this.textureSampler = WebGPU.device.createSampler({
+        this.textureSampler = WebGPU.device!.createSampler({
             addressModeU: "clamp-to-edge",
             addressModeV: "clamp-to-edge",
             magFilter: "linear",
@@ -63,7 +63,7 @@ class Composition {
         const uniformsData = new ArrayBuffer(20);
         new Float32Array(uniformsData, 0, 4).set([color[0], color[1], color[2], Parameters.opacity]);
         new Uint32Array(uniformsData, 16, 1).set([Parameters.blending ? 1 : 0]);
-        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, uniformsData);
+        WebGPU.device!.queue.writeBuffer(this.uniformsBuffer, 0, uniformsData);
 
         const renderPassEncoder = webgpuCanvas.beginRenderPass(commandEncoder);
         renderPassEncoder.setPipeline(this.pipeline);
@@ -78,7 +78,7 @@ class Composition {
                 this.texture.destroy();
             }
 
-            this.texture = WebGPU.device.createTexture({
+            this.texture = WebGPU.device!.createTexture({
                 size: [wantedWidth, wantedHeight],
                 format: this.textureFormat,
                 usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
@@ -86,7 +86,7 @@ class Composition {
             this.textureWidth = wantedWidth;
             this.textureHeight = wantedHeight;
 
-            this.bindgroup = WebGPU.device.createBindGroup({
+            this.bindgroup = WebGPU.device!.createBindGroup({
                 layout: this.pipeline.getBindGroupLayout(0),
                 entries: [
                     {

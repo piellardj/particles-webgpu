@@ -22,17 +22,22 @@ function setOverlays(attractors: Attractor[]): void {
 
     if (!Parameters.displayAttractors) {
         const elements = Array.from(container.querySelectorAll<HTMLElement>(`.${className}`));
-        while (elements.length > 0) {
-            const lastElement = elements.pop();
-            lastElement.parentElement.removeChild(lastElement);
+        for (const element of elements) {
+            const parentElement = element.parentElement;
+            if (parentElement) {
+                parentElement.removeChild(element);
+            }
         }
         return;
     }
 
     const elements = Array.from(container.querySelectorAll<HTMLElement>(`.${className}`));
     while (elements.length > attractors.length) {
-        const lastElement = elements.pop();
-        lastElement.parentElement.removeChild(lastElement);
+        const lastElement = elements.pop()!;
+        const parentElement = lastElement.parentElement;
+        if (parentElement) {
+            parentElement.removeChild(lastElement);
+        }
     }
     while (elements.length < attractors.length) {
         const newElement = document.createElement("span");
@@ -42,10 +47,12 @@ function setOverlays(attractors: Attractor[]): void {
     }
 
     for (let i = 0; i < elements.length; i++) {
-        const x = 100 * (0.5 + 0.5 * attractors[i].position[0]);
-        const y = 100 * (0.5 + 0.5 * attractors[i].position[1]);
-        elements[i].style.left = `${x.toFixed(2)}%`;
-        elements[i].style.top = `${y.toFixed(2)}%`;
+        const element = elements[i]!;
+        const attractor = attractors[i]!;
+        const x = 100 * (0.5 + 0.5 * attractor.position[0]);
+        const y = 100 * (0.5 + 0.5 * attractor.position[1]);
+        element.style.left = `${x.toFixed(2)}%`;
+        element.style.top = `${y.toFixed(2)}%`;
     }
 }
 

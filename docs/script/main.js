@@ -25,16 +25,21 @@ function setOverlays(attractors) {
     }
     if (!parameters_1.Parameters.displayAttractors) {
         const elements = Array.from(container.querySelectorAll(`.${className}`));
-        while (elements.length > 0) {
-            const lastElement = elements.pop();
-            lastElement.parentElement.removeChild(lastElement);
+        for (const element of elements) {
+            const parentElement = element.parentElement;
+            if (parentElement) {
+                parentElement.removeChild(element);
+            }
         }
         return;
     }
     const elements = Array.from(container.querySelectorAll(`.${className}`));
     while (elements.length > attractors.length) {
         const lastElement = elements.pop();
-        lastElement.parentElement.removeChild(lastElement);
+        const parentElement = lastElement.parentElement;
+        if (parentElement) {
+            parentElement.removeChild(lastElement);
+        }
     }
     while (elements.length < attractors.length) {
         const newElement = document.createElement("span");
@@ -43,10 +48,12 @@ function setOverlays(attractors) {
         elements.push(newElement);
     }
     for (let i = 0; i < elements.length; i++) {
-        const x = 100 * (0.5 + 0.5 * attractors[i].position[0]);
-        const y = 100 * (0.5 + 0.5 * attractors[i].position[1]);
-        elements[i].style.left = `${x.toFixed(2)}%`;
-        elements[i].style.top = `${y.toFixed(2)}%`;
+        const element = elements[i];
+        const attractor = attractors[i];
+        const x = 100 * (0.5 + 0.5 * attractor.position[0]);
+        const y = 100 * (0.5 + 0.5 * attractor.position[1]);
+        element.style.left = `${x.toFixed(2)}%`;
+        element.style.top = `${y.toFixed(2)}%`;
     }
 }
 exports.setOverlays = setOverlays;
@@ -557,12 +564,12 @@ const parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameter
 const webgpu_canvas_1 = __webpack_require__(/*! ./webgpu-utils/webgpu-canvas */ "./src/ts/webgpu-utils/webgpu-canvas.ts");
 const WebGPU = __importStar(__webpack_require__(/*! ./webgpu-utils/webgpu-device */ "./src/ts/webgpu-utils/webgpu-device.ts"));
 const Attractors = __importStar(__webpack_require__(/*! ./attractors */ "./src/ts/attractors.ts"));
-async function main() {
+async function main(canvas, canvasContainer) {
     await WebGPU.initialize();
     const device = WebGPU.device;
-    const webgpuCanvas = new webgpu_canvas_1.WebGPUCanvas(Page.Canvas.getCanvas());
+    const webgpuCanvas = new webgpu_canvas_1.WebGPUCanvas(canvas);
     const engine = new engine_1.Engine(webgpuCanvas.textureFormat);
-    Attractors.setContainer(Page.Canvas.getCanvasContainer());
+    Attractors.setContainer(canvasContainer);
     let lastRun = performance.now();
     let needToReset = true;
     parameters_1.Parameters.resetObservers.push(() => { needToReset = true; });
@@ -584,16 +591,23 @@ async function main() {
                 engine.initializeColors(commandEncoder, sampler, image);
             }
         }
-        webgpuCanvas.adjustSize();
         Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
         engine.draw(commandEncoder, webgpuCanvas);
         device.queue.submit([commandEncoder.finish()]);
         requestAnimationFrame(mainLoop);
     }
-    requestAnimationFrame(mainLoop);
+    setTimeout(() => {
+        webgpuCanvas.adjustSize();
+        requestAnimationFrame(mainLoop);
+    }, 1000);
 }
-main();
+const canvasElement = Page.Canvas.getCanvas();
+const canvasContainer = Page.Canvas.getCanvasContainer();
+if (!canvasElement || !canvasContainer) {
+    throw new Error("Could not find canvas on page.");
+}
+main(canvasElement, canvasContainer);
 
 
 /***/ }),
@@ -740,11 +754,13 @@ class Parameters {
     static async inputImageUrl() {
         if (customImageFile) {
             return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result.toString());
-                };
-                reader.readAsDataURL(customImageFile);
+                if (customImageFile) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result.toString());
+                    };
+                    reader.readAsDataURL(customImageFile);
+                }
             });
         }
         else {
@@ -807,7 +823,7 @@ Page.Select.addObserver(controlId.IMAGE_SELECT_ID, () => {
 });
 Page.FileControl.addUploadObserver(controlId.IMAGE_UPLOAD_BUTTON_ID, (filesList) => {
     Page.Select.setValue(controlId.IMAGE_SELECT_ID, null);
-    customImageFile = filesList[0];
+    customImageFile = filesList[0] || null;
     callResetObservers();
 });
 updateColorsVisibility();
@@ -1758,6 +1774,9 @@ class Renderer {
         renderPassEncoder.end();
     }
     createRenderPipelines(descriptor) {
+        if (!descriptor.fragment) {
+            throw new Error("Missing property 'fragment' on descriptor.");
+        }
         descriptor.fragment.targets = [{
                 format: this.targetTextureFormat
             }];
@@ -1849,10 +1868,13 @@ class WebGPUCanvas {
     constructor(canvas) {
         this.canvas = canvas;
         this.devicePixelRatio = window.devicePixelRatio;
-        const contextName = "webgpu";
-        this.context = canvas.getContext(contextName);
-        if (!this.context) {
-            throw new Error(`Failed to get a '${contextName}' context from canvas.`);
+        {
+            const contextName = "webgpu";
+            const context = canvas.getContext(contextName);
+            if (!context) {
+                throw new Error(`Failed to get a '${contextName}' context from canvas.`);
+            }
+            this.context = context;
         }
         this.canvasConfiguration = {
             device: WebGPU.device,
@@ -1935,13 +1957,15 @@ async function requestDevice() {
         exports.adapter = adapter = await gpu.requestAdapter({
             powerPreference: "high-performance"
         });
-        if (!adapter) {
+        if (adapter) {
+            if (adapter.isFallbackAdapter) {
+                Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
+            }
+            exports.device = device = await adapter.requestDevice();
+        }
+        else {
             throwAndDisplayException("webgpu-adapter", "Request for GPU adapter failed.");
         }
-        if (adapter.isFallbackAdapter) {
-            Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
-        }
-        exports.device = device = await adapter.requestDevice();
     }
 }
 exports.initialize = requestDevice;
@@ -2045,7 +2069,7 @@ module.exports = "struct VSOut {\r\n    @builtin(position) position: vec4<f32>,\
   \********************************************/
 /***/ ((module) => {
 
-module.exports = "struct Particle {\r\n    position: vec2<f32>,\r\n    velocity: vec2<f32>,\r\n};\r\n\r\nstruct ParticlesBuffer {\r\n    particles: array<Particle>,\r\n};\r\n\r\nstruct ColorsBuffer {\r\n    color: array<u32>,\r\n};\r\n\r\n@group(0) @binding(0) var<storage,read> particlesStorage: ParticlesBuffer;\r\n@group(0) @binding(1) var<storage,write> colorsStorage: ColorsBuffer;\r\n@group(1) @binding(0) var inputSampler : sampler;\r\n@group(1) @binding(1) var inputTexture: texture_2d<f32>;\r\n\r\n@compute @workgroup_size(256)\r\nfn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n    let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);\r\n\r\n    let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;\r\n    let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;\r\n    colorsStorage.color[index] = packColor(color);\r\n}\r\n";
+module.exports = "struct Particle {\r\n    position: vec2<f32>,\r\n    velocity: vec2<f32>,\r\n};\r\n\r\nstruct ParticlesBuffer {\r\n    particles: array<Particle>,\r\n};\r\n\r\nstruct ColorsBuffer {\r\n    color: array<u32>,\r\n};\r\n\r\n@group(0) @binding(0) var<storage,read> particlesStorage: ParticlesBuffer;\r\n@group(0) @binding(1) var<storage,read_write> colorsStorage: ColorsBuffer;\r\n@group(1) @binding(0) var inputSampler : sampler;\r\n@group(1) @binding(1) var inputTexture: texture_2d<f32>;\r\n\r\n@compute @workgroup_size(256)\r\nfn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {\r\n    let index: u32 = GlobalInvocationID.x;\r\n    let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);\r\n\r\n    let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;\r\n    let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;\r\n    colorsStorage.color[index] = packColor(color);\r\n}\r\n";
 
 /***/ }),
 

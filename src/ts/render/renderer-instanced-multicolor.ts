@@ -15,7 +15,7 @@ class RendererInstancedMulticolor extends RendererInstanced {
     public constructor(targetTextureFormat: GPUTextureFormat) {
         super(targetTextureFormat);
 
-        const shaderModule = WebGPU.device.createShaderModule({ code: ColorShaderPartSource + ShaderSource });
+        const shaderModule = WebGPU.device!.createShaderModule({ code: ColorShaderPartSource + ShaderSource });
 
         this.createRenderPipelines({
             vertex: {

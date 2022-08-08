@@ -7,12 +7,12 @@ import { WebGPUCanvas } from "./webgpu-utils/webgpu-canvas";
 import * as WebGPU from "./webgpu-utils/webgpu-device";
 import * as Attractors from "./attractors";
 
-async function main(): Promise<void> {
+async function main(canvas: HTMLCanvasElement, canvasContainer: HTMLElement): Promise<void> {
     await WebGPU.initialize();
     const device = WebGPU.device as GPUDevice;
-    const webgpuCanvas = new WebGPUCanvas(Page.Canvas.getCanvas());
+    const webgpuCanvas = new WebGPUCanvas(canvas);
     const engine = new Engine(webgpuCanvas.textureFormat);
-    Attractors.setContainer(Page.Canvas.getCanvasContainer());
+    Attractors.setContainer(canvasContainer);
 
     let lastRun = performance.now();
 
@@ -23,6 +23,7 @@ async function main(): Promise<void> {
         const now = performance.now();
         const dt = Parameters.speed * Math.min(1 / 60, 0.001 * (now - lastRun));
         lastRun = now;
+
 
         const commandEncoder = device.createCommandEncoder();
 
@@ -41,8 +42,6 @@ async function main(): Promise<void> {
             }
         }
 
-        webgpuCanvas.adjustSize();
-
         Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
         engine.draw(commandEncoder, webgpuCanvas);
@@ -52,7 +51,15 @@ async function main(): Promise<void> {
         requestAnimationFrame(mainLoop);
     }
 
-    requestAnimationFrame(mainLoop);
+    setTimeout(() => {
+        webgpuCanvas.adjustSize();
+        requestAnimationFrame(mainLoop);
+    }, 1000);
 }
 
-main();
+const canvasElement = Page.Canvas.getCanvas();
+const canvasContainer = Page.Canvas.getCanvasContainer();
+if (!canvasElement || !canvasContainer) {
+    throw new Error("Could not find canvas on page.");
+}
+main(canvasElement, canvasContainer);

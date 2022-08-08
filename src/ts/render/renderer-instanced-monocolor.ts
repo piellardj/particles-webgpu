@@ -13,7 +13,7 @@ class RendererInstancedMonocolor extends RendererInstanced {
     public constructor(targetTextureFormat: GPUTextureFormat) {
         super(targetTextureFormat);
 
-        const shaderModule = WebGPU.device.createShaderModule({ code: ShaderSource });
+        const shaderModule = WebGPU.device!.createShaderModule({ code: ShaderSource });
 
         this.createRenderPipelines({
             vertex: {

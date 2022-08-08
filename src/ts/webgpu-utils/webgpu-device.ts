@@ -20,13 +20,15 @@ async function requestDevice(): Promise<void> {
         adapter = await gpu.requestAdapter({
             powerPreference: "high-performance"
         });
-        if (!adapter) {
+
+        if (adapter) {
+            if (adapter.isFallbackAdapter) {
+                Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
+            }
+            device = await adapter.requestDevice();
+        } else {
             throwAndDisplayException("webgpu-adapter", "Request for GPU adapter failed.");
         }
-        if (adapter.isFallbackAdapter) {
-            Page.Demopage.setErrorMessage("webgpu-is-fallback", "The retrieved GPU adapter is fallback. The performance might be degraded.");
-        }
-        device = await adapter.requestDevice();
     }
 }
 

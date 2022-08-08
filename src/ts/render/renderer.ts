@@ -19,7 +19,7 @@ abstract class Renderer implements IRenderer {
     private pipelineNoBlending: Pipeline;
 
     protected constructor(private readonly targetTextureFormat: GPUTextureFormat) {
-        this.uniformsBuffer = WebGPU.device.createBuffer({
+        this.uniformsBuffer = WebGPU.device!.createBuffer({
             size: 24,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
@@ -34,6 +34,10 @@ abstract class Renderer implements IRenderer {
     public abstract drawInternal(renderPassEncoder: GPURenderPassEncoder, canvasWidth: number, canvasHeight: number, particleBatches: RenderableParticlesBatch[]): void;
 
     protected createRenderPipelines(descriptor: GPURenderPipelineDescriptor): void {
+        if (!descriptor.fragment) {
+            throw new Error("Missing property 'fragment' on descriptor.");
+        }
+
         descriptor.fragment.targets = [{
             format: this.targetTextureFormat
         }];
@@ -59,7 +63,7 @@ abstract class Renderer implements IRenderer {
 
     protected updateUniformsBuffer(canvasWidth: number, canvasHeight: number): void {
         const uniformsData = [this.particleColor[0], this.particleColor[1], this.particleColor[2], this.particleOpacity, this.spriteSize / canvasWidth, this.spriteSize / canvasHeight];
-        WebGPU.device.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array(uniformsData).buffer);
+        WebGPU.device!.queue.writeBuffer(this.uniformsBuffer, 0, new Float32Array(uniformsData).buffer);
     }
 
     protected get pipeline(): Pipeline {
@@ -71,8 +75,8 @@ abstract class Renderer implements IRenderer {
     }
 
     private createPipeline(descriptor: GPURenderPipelineDescriptor): Pipeline {
-        const pipeline = WebGPU.device.createRenderPipeline(descriptor);
-        const uniformsBindgroup = WebGPU.device.createBindGroup({
+        const pipeline = WebGPU.device!.createRenderPipeline(descriptor);
+        const uniformsBindgroup = WebGPU.device!.createBindGroup({
             layout: pipeline.getBindGroupLayout(0),
             entries: [
                 {

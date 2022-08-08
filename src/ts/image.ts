@@ -19,7 +19,7 @@ async function getTexture(path: string): Promise<GPUTexture> {
         await image.decode();
         const imageBitmap = await createImageBitmap(image);
 
-        const gpuTexture = WebGPU.device.createTexture({
+        const gpuTexture = WebGPU.device!.createTexture({
             size: [imageBitmap.width, imageBitmap.height, 1],
             format: 'rgba8unorm',
             usage:
@@ -27,7 +27,7 @@ async function getTexture(path: string): Promise<GPUTexture> {
                 GPUTextureUsage.COPY_DST |
                 GPUTextureUsage.RENDER_ATTACHMENT
         });
-        WebGPU.device.queue.copyExternalImageToTexture(
+        WebGPU.device!.queue.copyExternalImageToTexture(
             { source: imageBitmap },
             { texture: gpuTexture },
             [imageBitmap.width, imageBitmap.height]
@@ -44,7 +44,7 @@ async function getTexture(path: string): Promise<GPUTexture> {
 
 function getSampler(): GPUSampler {
     if (!linearSampler) {
-        linearSampler = WebGPU.device.createSampler({
+        linearSampler = WebGPU.device!.createSampler({
             addressModeU: "clamp-to-edge",
             addressModeV: "clamp-to-edge",
             magFilter: "linear",

@@ -591,16 +591,14 @@ async function main(canvas, canvasContainer) {
                 engine.initializeColors(commandEncoder, sampler, image);
             }
         }
+        webgpuCanvas.adjustSize();
         Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
         engine.draw(commandEncoder, webgpuCanvas);
         device.queue.submit([commandEncoder.finish()]);
         requestAnimationFrame(mainLoop);
     }
-    setTimeout(() => {
-        webgpuCanvas.adjustSize();
-        requestAnimationFrame(mainLoop);
-    }, 1000);
+    requestAnimationFrame(mainLoop);
 }
 const canvasElement = Page.Canvas.getCanvas();
 const canvasContainer = Page.Canvas.getCanvasContainer();
@@ -1884,6 +1882,7 @@ class WebGPUCanvas {
             // no "size" attribute to use the canvas' width and height
         };
         this.context.configure(this.canvasConfiguration);
+        this.adjustSize();
         this.textureFormat = this.canvasConfiguration.format;
         this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
     }
@@ -1899,7 +1898,6 @@ class WebGPUCanvas {
         if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
             this.canvas.width = actualWidth;
             this.canvas.height = actualHeight;
-            this.context.configure(this.canvasConfiguration);
         }
     }
     beginRenderPass(commandEncoder) {

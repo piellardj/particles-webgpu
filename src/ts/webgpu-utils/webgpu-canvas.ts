@@ -28,6 +28,7 @@ class WebGPUCanvas {
             // no "size" attribute to use the canvas' width and height
         };
         this.context.configure(this.canvasConfiguration);
+        this.adjustSize();
 
         this.textureFormat = this.canvasConfiguration.format;
         this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
@@ -48,8 +49,6 @@ class WebGPUCanvas {
         if (this.canvas.width !== actualWidth || this.canvas.height !== actualHeight) {
             this.canvas.width = actualWidth;
             this.canvas.height = actualHeight;
-
-            this.context.configure(this.canvasConfiguration);
         }
     }
 

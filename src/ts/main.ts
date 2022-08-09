@@ -24,7 +24,6 @@ async function main(canvas: HTMLCanvasElement, canvasContainer: HTMLElement): Pr
         const dt = Parameters.speed * Math.min(1 / 60, 0.001 * (now - lastRun));
         lastRun = now;
 
-
         const commandEncoder = device.createCommandEncoder();
 
         if (needToReset) {
@@ -42,6 +41,8 @@ async function main(canvas: HTMLCanvasElement, canvasContainer: HTMLElement): Pr
             }
         }
 
+        webgpuCanvas.adjustSize();
+
         Attractors.update(dt);
         engine.update(commandEncoder, dt, webgpuCanvas.width / webgpuCanvas.height);
         engine.draw(commandEncoder, webgpuCanvas);
@@ -51,10 +52,7 @@ async function main(canvas: HTMLCanvasElement, canvasContainer: HTMLElement): Pr
         requestAnimationFrame(mainLoop);
     }
 
-    setTimeout(() => {
-        webgpuCanvas.adjustSize();
-        requestAnimationFrame(mainLoop);
-    }, 1000);
+    requestAnimationFrame(mainLoop);
 }
 
 const canvasElement = Page.Canvas.getCanvas();

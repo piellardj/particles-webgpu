@@ -19,7 +19,6 @@ struct ColorsBuffer {
 @compute @workgroup_size(256)
 fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let index: u32 = GlobalInvocationID.x;
-    let inputTextureDimensions : vec2<i32> = textureDimensions(inputTexture, 0);
 
     let uv = 0.5 + 0.5 * particlesStorage.particles[index].position;
     let color = textureSampleLevel(inputTexture, inputSampler, uv, 0.0).rgb;

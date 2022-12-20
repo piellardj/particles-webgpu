@@ -40,7 +40,7 @@ class Composition {
         });
         
         this.uniformsBuffer = WebGPU.device!.createBuffer({
-            size: 20,
+            size: 32, // useful size: 20
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
 

@@ -20,7 +20,7 @@ abstract class Renderer implements IRenderer {
 
     protected constructor(private readonly targetTextureFormat: GPUTextureFormat) {
         this.uniformsBuffer = WebGPU.device!.createBuffer({
-            size: 24,
+            size: 32, // useful size: 24
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }

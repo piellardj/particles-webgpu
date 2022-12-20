@@ -901,7 +901,7 @@ class Composition {
             layout: "auto"
         });
         this.uniformsBuffer = WebGPU.device.createBuffer({
-            size: 20,
+            size: 32,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
         this.textureSampler = WebGPU.device.createSampler({
@@ -1762,7 +1762,7 @@ class Renderer {
         this.enableAdditiveBlending = true;
         this.spriteSize = 2;
         this.uniformsBuffer = WebGPU.device.createBuffer({
-            size: 24,
+            size: 32,
             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         });
     }

@@ -14,9 +14,6 @@
     "rebuild": "npm run clean && npm run build",
     "webpack": "webpack --config src/config/webpack.config.js"
   },
-  "engine": {
-    "node": ">=16.13.0"
-  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",

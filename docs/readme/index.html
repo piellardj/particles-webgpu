@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="Readme page of my project 'Particles'. WebGPU implementation of particles in a gravity field" />
+    <title>Particles - Explanations</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
+    <link rel="stylesheet" type="text/css" href="css/page.css?v=2023-04-15T20%3A47%3A18.111Z">
+  </head>
+
+  <body>
+    <header>
+      <a class="logo logo-animate-fill" href="https://piellardj.github.io/particles-webgpu/" id="seep-live-button" title="Live project" aria-label="Live project">
+        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+          <g stroke-width="2">
+            <path fill="none" stroke-linejoin="round" d="M24,20v24L46,32z" />
+        </svg>
+      </a>
+    </header>
+    <main>
+      <div class="contents">
+        <h1 id="particleswebgpu">particles-webgpu</h1>
+        <p>This project a basic particles simulation running fully on GPU, using the new WebGPU API. Particles evolve independently, following simple gravitational rules. There can be several attraction points at once. You can control one with your mouse by pressing the left mouse button.</p>
+        <p>Chrome 94 brings experimental support for the new WebGPU API. To enable it, a flag is available in <code>chrome://flags/#enable-unsafe-webgpu</code>. If you can't find this flag, try using Chrome Canary instead.</p>
+        <p>This is actually a WebGPU port of my old <a href="https://github.com/piellardj/particles-gpu">particles-gpu</a> project. The main differences are that this one uses compute shaders, and stores the particles in a GPUBuffer instead of a texture.</p>
+        <p>See it live <a href="https://piellardj.github.io/particles-webgpu/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true&page%3Arange%3Aparticles-count-range-id=3">here</a>.</p>
+        <h2 id="preview">Preview</h2>
+        <p><img src="https://github.com/piellardj/particles-webgpu/raw/main/src/readme/01.png" alt="Illustration 1" /></p>
+        <p><img src="https://github.com/piellardj/particles-webgpu/raw/main/src/readme/02.png" alt="Illustration 2" /></p>
+        <h2 id="notes">Notes</h2>
+        <p>This is my first WebGPU project, so I probably made a few mistakes. Also, I am discovering behaviours that surprise me. Here is a documentation of most of them. I guess what follows is obvious to someone familiar modern APIs such as Vulkan (or even late OpenGL).</p>
+        <h3 id="expliciterrors">Explicit errors</h3>
+        <p>The first thing I noted is that the browser seems to perform tons of validity checks for each instruction, which makes debugging way easier than WebGL. Moreover, the messages clearly specify which validity check failed, why these checks were performed, etc.</p>
+        <h3 id="varandlet"><code>var</code> and <code>let</code></h3>
+        <p>Keywords <code>var</code> and <code>let</code> don't mean the same thing than in Javascript. In WGSL, <code>var</code> declares an object that can vary, while <code>let</code> declares an immutable object
+          <a href="https://www.w3.org/TR/WGSL/#var-and-let">Specification here</a>.
+        </p>
+        <h3 id="alignmentofstruct">Alignment of <code>struct</code></h3>
+        <p>I encountered a unexpected behaviour in a shader with a <code>struct</code> I used to describe a uniform buffer.</p>
+        <h4 id="issue">Issue</h4>
+        <p>Here is how I described it in the shader (wgsl):</p>
+        <pre><code class="glsl language-glsl">struct Uniforms {
+    singleFloat: f32;
+    vecFloat: vec2&lt;f32&gt;;
+};
+@group(0) @binding(0) var&lt;uniform&gt; uniforms: Uniforms;
+</code></pre>
+        <p>and here is how I first created it and included it (javascript):</p>
+        <pre><code class="javascript language-javascript">const gpuBuffer = device.createBuffer({
+    size: Float32Array.BYTES_PER_ELEMENT * (1 + 2), // one f32 and one vec2&lt;f32&gt;
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: false,
+});
+device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(0),
+    entries: [{
+        binding: 0,
+        resource: { buffer: gpuBuffer }
+    }]
+});
+</code></pre>
+        <p>To my surprise, Chrome outputed the following error:</p>
+        <pre><code>Binding size (12) is smaller than the minimum binding size (16).
+ - While validating entries[0] as a Buffer
+ - While validating [BindGroupDescriptor] against [BindGroupLayout]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+</code></pre>
+        <p>In an attempt of fixing it, I naively complied and padding the buffer to make its size 16 bytes. It "fixed" this specific issue but things still didn't behave as I expected.</p>
+        <pre><code class="javascript language-javascript">// creation
+const gpuBuffer = device.createBuffer({
+    size: Float32Array.BYTES_PER_ELEMENT * (1 + 2 + 1), // one f32 and one vec2&lt;f32&gt; and one padding float
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: false,
+});
+// ... add it to a bindgroup ;.. //
+
+// writing
+const a = ..., b = ..., c = ...;
+const floatBuffer = new Float32Array([a, b, c]);
+const buffer = floatBuffer.buffer;
+device.queue.writeBuffer(this.renderpassUniformsBuffer, 0, buffer);
+
+// ... bind the bindgroup to a renderpass ... //
+</code></pre>
+        <p>During the shader execution, I expected to have:</p>
+        <pre><code class="glsl language-glsl">(uniforms.singleFloat == a) &amp;&amp; (uniforms.vecFloat == vec2&lt;f32&gt;(b, c))
+</code></pre>
+        <p>but instead got:</p>
+        <pre><code class="glsl language-glsl">(uniforms.singleFloat == a) &amp;&amp; (uniforms.vecFloat == vec2&lt;f32&gt;(c, 0.0))
+</code></pre>
+        <h4 id="causeandfix">Cause and fix</h4>
+        <p>This issue came from alignment of types in WGSL. This behaviour is described in the <a href="https://www.w3.org/TR/WGSL/#structure-layout-rules">Structure Layout Rules</a> and <a href="https://www.w3.org/TR/WGSL/#alignof">Alignment and Size</a> sections of the WGSL spec.</p>
+        <p>Each type has their own alignment requirements. In this case, the relevant info is: <code>AlignOf(f32) == 4</code> and <code>AlignOf(vec2&lt;f32&gt;) == 8</code>. This means that when I write:</p>
+        <pre><code class="glsl language-glsl">struct Uniforms {
+    singleFloat: f32;
+    vecFloat: vec2&lt;f32&gt;;
+};
+</code></pre>
+        <p>because of the 8-bytes alignment of <code>vec2&lt;f32&gt;</code>, it is actually translated as:</p>
+        <pre><code class="glsl language-glsl">struct Uniforms {
+    singleFloat: f32;
+    unusablePaddingFloat: f32;
+    vecFloat: vec2&lt;f32&gt;;
+};
+</code></pre>
+        <p>This explains why</p>
+        <ul>
+          <li>Chrome was requesting a minimum binding size of 16</li>
+          <li>and when using the buffer <code>[a, b, c, 0]</code> as my uniform buffer, <code>uniforms.vecFloat</code> was filled with <code>(c,0)</code> instead of <code>(b,c)</code>.</li>
+        </ul>
+        <p>Since <code>f32</code> are 4-bytes aligned and I don't care about the alignment/stride of the <code>struct</code> itself, the fix I used is surprisingly simple: switch my two properties:</p>
+        <pre><code class="glsl language-glsl">struct Uniforms {
+    vecFloat: vec2&lt;f32&gt;;
+    singleFloat: f32;
+};
+</code></pre>
+        <p>It is worth noting that one can explicit alignment and stride of each property with by decorating them with the WGSL attributes <code>@align(X)</code> and <code>@stride(Y)</code>.</p>
+        <h3 id="usageoffloat16">Usage of Float16</h3>
+        <h4 id="float16inwgsl">Float16 in WGSL</h4>
+        <p>I was surprised to see that according to the <a href="https://www.w3.org/TR/WGSL/#floating-point-evaluation">Floating Point Evaluation</a> section of the spec, WebGPU uses Float32 precision for shader computations (and 32-bits types in general). What a difference with WebGL where some devices only supported <code>lowp</code> !</p>
+        <p>According to the <a href="https://www.w3.org/TR/WGSL/#plain-types-section">Plain types</a> section of the WGSL spec, the base types are <code>bool</code>, <code>u32</code>, <code>i32</code>, <code>f32</code> but there is no <code>f16</code>.</p>
+        <p>For my computations, storing the positions and velocities as Float16 would be enough. However since I store them in buffers, I have to use Float32, so each particle takes 16 bytes (one <code>vec2&lt;f32&gt;</code> for position, one <code>vec2&lt;f32&gt;</code> for velocity), which is a lot.
+          One way to use Float16 for storage would be to use a <a href="https://www.w3.org/TR/webgpu/#plain-color-formats"><code>rgba16float</code></a> texture and manipulating it texel by texel with <a href="https://www.w3.org/TR/WGSL/#textureload"><code>textureLoad</code></a> and <a href="https://www.w3.org/TR/WGSL/#texturestore"><code>textureStore</code></a>.</p>
+        <h4 id="float16injavascript">Float16 in Javascript</h4>
+        <p>One issue I would have if I used a <code>rgba16float</code> texture for storing the position/velocity in a texel would be to initialize this texture. One way to fill a texture is to use the <code>GPUDevice.GPUQueue.writeTexture</code> method, by passing it an <code>ArrayBuffer</code>. However, sadly in Javascript there is no TypedArray for Float16: there are amongst others <code>Uint8Array</code>, <code>Uint16Array</code>, <code>Uint32Array</code>, <code>BigUint64Array</code>, <code>Float32Array</code> and <code>Float64Array</code> however there is no <code>Float16Array</code>. I don't know why this type is lacking but I feel like it would be useful. To avoid this issue, I would have either</p>
+        <ul>
+          <li>to craft on CPU-side Float16 with bit manipulations</li>
+          <li>or to initialize the texture on the GPU. Initial positions are random and having nice random in shaders is a bit tricky. WGSL support bit operations on ui32, so I suppose a simple PCG random number generator could be implemented in a compute shader (maybe by using built-ins such as <code>GlobalInvocationId</code> as part of the seed ?).</li>
+        </ul>
+        <h3 id="datapacking">Data packing</h3>
+        <p>WebGPU offers nice data packing builtin functions (<a href="https://www.w3.org/TR/WGSL/#pack-builtin-functions">see spec here</a>) such as <code>pack4x8unorm</code> and <code>unpack4x8unorm</code>, which allow compact packing of <code>vec4&lt;f32&gt;</code> into <code>u32</code> (useful for storing colors for instance).</p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="badge-shelf">
+        <a class="badge" href="mailto:jeremie.piellard@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 512 512">
+            <path d="M512 85V448H0V85l256 224L512 85zM488 64H24L256 267 488 64z" />
+          </svg>
+        </a>
+
+        <a class="badge" href="https://github.com/piellardj" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 1024 1024">
+            <path d="M512 0C229 0 0 229 0 512c0 226 147 418 350 486 26 5 35-11 35-25 0-12 0-53-1-95C242 909 212 818 212 818c-23-59-57-75-57-75-47-32 4-31 4-31 51 4 78 53 78 53 46 78 120 56 149 43 5-33 18-56 33-68C305 725 185 682 185 485c0-56 20-102 53-137-5-13-23-65 5-136 0 0 43-14 141 53 41-11 85-17 128-17 44 0 87 6 128 17 98-66 141-52 141-52 28 71 10 123 5 136 33 36 53 81 53 137 0 197-120 240-234 253 18 16 35 47 35 95 0 68-1 124-1 141 0 14 9 30 35 25C877 930 1024 738 1024 512 1024 229 795 0 512 0z" />
+          </svg>
+        </a>
+
+        <a class="badge" href="https://www.linkedin.com/in/jeremie-piellard/" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 512 512">
+            <path d="M30 177l93-1v304l-93 1v-304z" />
+            <path d="M200 177l89-1v39l0 11c26-26 53-45 97-45 51 0 100 21 100 91v208l-90 1v-159c0-35-9-58-51-58-37 0-52 7-52 55v160l-92 1v-304z" />
+            <path d="M128 81c0 28-23 51-51 51s-51-23-51-51c0-28 23-51 51-51 28 0 51 23 51 51z" />
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </body>
+
+</html>

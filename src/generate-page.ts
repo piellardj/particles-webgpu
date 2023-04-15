@@ -11,6 +11,10 @@ const data = {
         "Particles evolve independently, following simple gravitational rules. There can be several attraction points at once. You can control one with your mouse by pressing the left mouse button."
     ],
     githubProjectName: "particles-webgpu",
+    readme: {
+        filepath: path.join(__dirname, "..", "README.md"),
+        branchName: "main"
+    },
     additionalLinks: [],
     styleFiles: [
         "css/attractor-overlay.css"

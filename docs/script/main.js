@@ -655,20 +655,17 @@ var AttractorsPreset;
     AttractorsPreset["SINES"] = "sines";
     AttractorsPreset["CENTRAL_ATTRACTIVE"] = "central-attractive";
     AttractorsPreset["CENTRAL_REPULSIVE"] = "central-repulsive";
-})(AttractorsPreset || (AttractorsPreset = {}));
-exports.AttractorsPreset = AttractorsPreset;
+})(AttractorsPreset || (exports.AttractorsPreset = AttractorsPreset = {}));
 var ColorMode;
 (function (ColorMode) {
     ColorMode["UNICOLOR"] = "unicolor";
     ColorMode["MULTICOLOR"] = "multicolor";
-})(ColorMode || (ColorMode = {}));
-exports.ColorMode = ColorMode;
+})(ColorMode || (exports.ColorMode = ColorMode = {}));
 var ColorSource;
 (function (ColorSource) {
     ColorSource["IMAGE"] = "image";
     ColorSource["VELOCITY"] = "velocity";
-})(ColorSource || (ColorSource = {}));
-exports.ColorSource = ColorSource;
+})(ColorSource || (exports.ColorSource = ColorSource = {}));
 var ImagePreset;
 (function (ImagePreset) {
     ImagePreset["COLORS"] = "colors";
@@ -2140,7 +2137,10 @@ module.exports = "fn unpackColor(packed: u32, alpha: f32) -> vec4<f32> {\r\n    
 /******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
-/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && !scriptUrl) scriptUrl = scripts[i--].src;
+/******/ 				}
 /******/ 			}
 /******/ 		}
 /******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration

@@ -9,6 +9,8 @@ This is actually a WebGPU port of my old [particles-gpu](https://github.com/piel
 
 See it live [here](https://piellardj.github.io/particles-webgpu/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true&page%3Arange%3Aparticles-count-range-id=3).
 
+[![Donate](https://raw.githubusercontent.com/piellardj/piellardj.github.io/master/images/readme/donate-paypal.svg)](https://www.paypal.com/donate/?hosted_button_id=AF7H7GEJTL95E)
+
 ## Preview
 ![Illustration 1](src/readme/01.png)
 
